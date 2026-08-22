@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import CarCard from './components/CarCard.vue'
 interface Car {
   id: number
   make: string
@@ -73,10 +74,13 @@ function exploreCars(): void {
         No cars found matching your search.
       </p>
       <div class="car-grid">
-        <article v-for="car in filteredCars" :key="car.id" class="car-card">
-          <h3>{{ car.make }} {{ car.model }}</h3>
-          <p>{{ car.location }}</p>
-        </article>
+        <CarCard
+          v-for="car in filteredCars"
+          :key="car.id"
+          :make="car.make"
+          :model="car.model"
+          :location="car.location"
+        />
       </div>
     </section>
   </main>
@@ -109,12 +113,5 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 24px;
-}
-
-.car-card {
-  padding: 24px;
-  border: 1px solid #2a3038;
-  border-radius: 16px;
-  background: #15191f;
 }
 </style>
