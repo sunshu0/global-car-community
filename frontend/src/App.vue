@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 interface Car {
   id: number
   make: string
@@ -26,6 +26,20 @@ const cars: Car[] = [
     location: 'Berlin, Germany',
   },
 ]
+const searchQuery = ref<string>('')
+const filteredCars = computed<Car[]>(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+
+  if (query === '') {
+    return cars
+  }
+
+  return cars.filter((car) => {
+    const searchableText = `${car.make} ${car.model} ${car.location}`.toLowerCase()
+
+    return searchableText.includes(query)
+  })
+})
 const siteName = 'WORLD GARAGE'
 const tagline = 'Discover real cars from around the world'
 const statusMessage = ref<string>('Ready to explore.')
@@ -44,9 +58,22 @@ function exploreCars(): void {
     <p>{{ statusMessage }}</p>
     <section class="featured-section">
       <h2>Featured cars</h2>
+      <label for="car-search">Search cars</label>
 
+      <input
+        id="car-search"
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search by make, model, or location"
+      />
+
+      <p v-if="searchQuery">Search results for "{{ searchQuery }}"</p>
+
+      <p v-if="filteredCars.length === 0" class="empty-state">
+        No cars found matching your search.
+      </p>
       <div class="car-grid">
-        <article v-for="car in cars" :key="car.id" class="car-card">
+        <article v-for="car in filteredCars" :key="car.id" class="car-card">
           <h3>{{ car.make }} {{ car.model }}</h3>
           <p>{{ car.location }}</p>
         </article>
