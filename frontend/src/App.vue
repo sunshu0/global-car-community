@@ -1,93 +1,54 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import CarCard from './components/CarCard.vue'
+
 interface Car {
   id: number
   make: string
   model: string
   location: string
 }
-const cars: Car[] = [
-  {
-    id: 1,
-    make: 'Nissan',
-    model: '370Z',
-    location: 'Auckland, New Zealand',
-  },
-  {
-    id: 2,
-    make: 'Toyota',
-    model: 'Supra',
-    location: 'Tokyo, Japan',
-  },
-  {
-    id: 3,
-    make: 'Mercedes-Benz',
-    model: 'A45 AMG',
-    location: 'Berlin, Germany',
-  },
-  {
-    id: 4,
-    make: 'Ford',
-    model: 'Mustang GT',
-    location: 'Los Angeles, USA',
-  },
-  {
-    id: 5,
-    make: 'Chevrolet',
-    model: 'Camaro SS',
-    location: 'Detroit, USA',
-  },
-  {
-    id: 6,
-    make: 'BMW',
-    model: 'M3',
-    location: 'Munich, Germany',
-  },
-  {
-    id: 7,
-    make: 'Audi',
-    model: 'RS5',
-    location: 'Ingolstadt, Germany',
-  },
-  {
-    id: 8,
-    make: 'Porsche',
-    model: '911 Carrera S',
-    location: 'Stuttgart, Germany',
-  },
-  {
-    id: 9,
-    make: 'Lamborghini',
-    model: 'Huracan EVO',
-    location: "Sant'Agata Bolognese, Italy",
-  },
-  {
-    id: 10,
-    make: 'Ferrari',
-    model: '488 Pista',
-    location: 'Maranello, Italy',
-  },
-]
+
+const cars = ref<Car[]>([])
+const isLoading = ref<boolean>(true)
+const loadError = ref<string>('')
 const searchQuery = ref<string>('')
 const selectedCountry = ref<string>('All countries')
+
 const filteredCars = computed<Car[]>(() => {
   const query = searchQuery.value.trim().toLowerCase()
 
-  return cars.filter((car) => {
+  return cars.value.filter((car) => {
     const searchableText = `${car.make} ${car.model} ${car.location}`.toLowerCase()
-
     const matchesSearch = query === '' || searchableText.includes(query)
-
     const matchesCountry =
       selectedCountry.value === 'All countries' || car.location.endsWith(selectedCountry.value)
 
     return matchesSearch && matchesCountry
   })
 })
+
 const siteName = 'WORLD GARAGE'
 const tagline = 'Discover real cars from around the world'
 const statusMessage = ref<string>('Ready to explore.')
+
+async function loadCars(): Promise<void> {
+  try {
+    const response = await fetch('/api/cars')
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`)
+    }
+
+    cars.value = await response.json()
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : 'Unable to load cars.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(loadCars)
 
 function exploreCars(): void {
   statusMessage.value = 'The car gallery is coming next.'
@@ -125,7 +86,9 @@ function exploreCars(): void {
 
       <p v-if="searchQuery">Search results for "{{ searchQuery }}"</p>
 
-      <p v-if="filteredCars.length === 0" class="empty-state">
+      <p v-if="isLoading">Loading cars...</p>
+      <p v-else-if="loadError" class="empty-state">Unable to load cars: {{ loadError }}</p>
+      <p v-else-if="filteredCars.length === 0" class="empty-state">
         No cars found matching your search.
       </p>
       <div class="car-grid">
