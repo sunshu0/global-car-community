@@ -26,6 +26,17 @@ describe('App', () => {
     expect(wrapper.text()).not.toContain('Toyota Supra')
     expect(wrapper.text()).not.toContain('Mercedes-Benz A45 AMG')
   })
+  it('filters cars by selected country', async () => {
+    const wrapper = mount(App)
+    const countryFilter = wrapper.get('#country-filter')
+
+    await countryFilter.setValue('Germany')
+
+    const carCards = wrapper.findAll('.car-card')
+
+    expect(carCards).toHaveLength(4)
+    expect(carCards.every((card) => card.text().includes('Germany'))).toBe(true)
+  })
   it('shows an empty state when no cars match', async () => {
     const wrapper = mount(App)
     const searchInput = wrapper.get('#car-search')

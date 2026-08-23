@@ -26,19 +26,63 @@ const cars: Car[] = [
     model: 'A45 AMG',
     location: 'Berlin, Germany',
   },
+  {
+    id: 4,
+    make: 'Ford',
+    model: 'Mustang GT',
+    location: 'Los Angeles, USA',
+  },
+  {
+    id: 5,
+    make: 'Chevrolet',
+    model: 'Camaro SS',
+    location: 'Detroit, USA',
+  },
+  {
+    id: 6,
+    make: 'BMW',
+    model: 'M3',
+    location: 'Munich, Germany',
+  },
+  {
+    id: 7,
+    make: 'Audi',
+    model: 'RS5',
+    location: 'Ingolstadt, Germany',
+  },
+  {
+    id: 8,
+    make: 'Porsche',
+    model: '911 Carrera S',
+    location: 'Stuttgart, Germany',
+  },
+  {
+    id: 9,
+    make: 'Lamborghini',
+    model: 'Huracan EVO',
+    location: "Sant'Agata Bolognese, Italy",
+  },
+  {
+    id: 10,
+    make: 'Ferrari',
+    model: '488 Pista',
+    location: 'Maranello, Italy',
+  },
 ]
 const searchQuery = ref<string>('')
+const selectedCountry = ref<string>('All countries')
 const filteredCars = computed<Car[]>(() => {
   const query = searchQuery.value.trim().toLowerCase()
-
-  if (query === '') {
-    return cars
-  }
 
   return cars.filter((car) => {
     const searchableText = `${car.make} ${car.model} ${car.location}`.toLowerCase()
 
-    return searchableText.includes(query)
+    const matchesSearch = query === '' || searchableText.includes(query)
+
+    const matchesCountry =
+      selectedCountry.value === 'All countries' || car.location.endsWith(selectedCountry.value)
+
+    return matchesSearch && matchesCountry
   })
 })
 const siteName = 'WORLD GARAGE'
@@ -67,6 +111,17 @@ function exploreCars(): void {
         type="text"
         placeholder="Search by make, model, or location"
       />
+
+      <label for="country-filter">Country</label>
+
+      <select id="country-filter" v-model="selectedCountry">
+        <option value="All countries">All countries</option>
+        <option value="New Zealand">New Zealand</option>
+        <option value="Japan">Japan</option>
+        <option value="Germany">Germany</option>
+        <option value="USA">USA</option>
+        <option value="Italy">Italy</option>
+      </select>
 
       <p v-if="searchQuery">Search results for "{{ searchQuery }}"</p>
 
