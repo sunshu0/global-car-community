@@ -18,7 +18,7 @@ public class CarService {
 
   public Optional<Car> getCarById(long id) {
     for (Car car : getAllCars()) {
-      if (car.id() == id) {
+      if (car.getId() == id) {
         return Optional.of(car);
       }
     }

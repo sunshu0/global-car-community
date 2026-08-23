@@ -16,8 +16,8 @@ class CarServiceTest {
     List<Car> cars = carService.getAllCars();
 
     assertEquals(3, cars.size());
-    assertEquals("Nissan", cars.get(0).make());
-    assertEquals("370Z", cars.get(0).model());
+    assertEquals("Nissan", cars.get(0).getMake());
+    assertEquals("370Z", cars.get(0).getModel());
   }
 
   @Test
@@ -26,8 +26,8 @@ class CarServiceTest {
 
     Car car = carService.getCarById(2L).orElseThrow();
 
-    assertEquals("Toyota", car.make());
-    assertEquals("Supra", car.model());
+    assertEquals("Toyota", car.getMake());
+    assertEquals("Supra", car.getModel());
   }
 
   @Test
