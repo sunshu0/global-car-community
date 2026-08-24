@@ -1,6 +1,7 @@
 package com.worldgarage.backend.service;
 
 import com.worldgarage.backend.model.Car;
+import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -8,21 +9,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class CarService {
 
+  private final CarRepository carRepository;
+
+  public CarService(CarRepository carRepository) {
+    this.carRepository = carRepository;
+  }
+
   public List<Car> getAllCars() {
-    return List.of(
-        new Car(1L, "Nissan", "370Z", "Auckland, New Zealand"),
-        new Car(2L, "Toyota", "Supra", "Tokyo, Japan"),
-        new Car(3L, "BMW", "M3", "Munich, Germany")
-    );
+    return carRepository.findAll();
   }
 
   public Optional<Car> getCarById(long id) {
-    for (Car car : getAllCars()) {
-      if (car.getId() == id) {
-        return Optional.of(car);
-      }
-    }
+    return carRepository.findById(id);
+  }
 
-    return Optional.empty();
+  public Car createCar(String make, String model, String location) {
+    Car car = new Car(make, model, location);
+    return carRepository.save(car);
   }
 }
