@@ -193,4 +193,217 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 24px;
 }
+:global(body) {
+  background: radial-gradient(circle at 80% 0%, rgb(229 72 77 / 14%), transparent 32rem), #0b0d10;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+}
+
+main {
+  padding: 72px 24px;
+}
+
+h1 {
+  color: #f5f7fb;
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+main > p:first-of-type {
+  max-width: 560px;
+  margin: 24px 0 0;
+  color: #aeb4c0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.6;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+main > button,
+.car-form > button {
+  border-radius: 10px;
+  background: #e5484d;
+  color: #fff;
+  font-weight: 800;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+main > button {
+  margin-top: 30px;
+  padding: 12px 18px;
+}
+
+main > button:hover,
+.car-form > button:hover:not(:disabled) {
+  background: #f2555a;
+  transform: translateY(-1px);
+}
+
+main > p:nth-of-type(2) {
+  display: inline-block;
+  margin: 0 0 0 18px;
+  color: #8d94a1;
+  font-size: 0.9rem;
+}
+
+.car-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+  align-items: end;
+  margin-top: 56px;
+  padding: 30px;
+  border: 1px solid #252a33;
+  border-radius: 18px;
+  background: rgb(18 21 26 / 88%);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 24%);
+}
+
+.car-form label {
+  color: #cbd0d9;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.car-form label[for='car-make'] {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.car-form label[for='car-model'] {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.car-form label[for='car-location'] {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.car-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid #343a45;
+  border-radius: 9px;
+  outline: none;
+  background: #0e1116;
+  color: #f5f7fb;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.car-form input:focus {
+  border-color: #e5484d;
+  box-shadow: 0 0 0 3px rgb(229 72 77 / 14%);
+}
+
+#car-make {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+#car-model {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+#car-location {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.car-form > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-width: 132px;
+  margin-top: 10px;
+  padding: 12px 22px;
+}
+
+.car-form > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.car-form > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ff8f93;
+  font-size: 0.9rem;
+}
+
+.featured-section {
+  margin-top: 64px;
+}
+
+@media (max-width: 760px) {
+  main {
+    padding: 40px 18px;
+  }
+
+  main > p:nth-of-type(2) {
+    display: block;
+    margin: 12px 0 0;
+  }
+
+  .car-form {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+
+  .car-form label,
+  .car-form input {
+    grid-column: 1;
+  }
+
+  .car-form label[for='car-make'] {
+    grid-row: 1;
+  }
+
+  #car-make {
+    grid-row: 2;
+  }
+
+  .car-form label[for='car-model'] {
+    grid-row: 3;
+    margin-top: 6px;
+  }
+
+  #car-model {
+    grid-row: 4;
+  }
+
+  .car-form label[for='car-location'] {
+    grid-row: 5;
+    margin-top: 6px;
+  }
+
+  #car-location {
+    grid-row: 6;
+  }
+
+  .car-form > button {
+    grid-row: 7;
+  }
+}
 </style>
