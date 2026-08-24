@@ -9,6 +9,7 @@ backend/target/
 
 # Local uploads and runtime data
 uploads/
+backend/data/
 
 # IDE and operating-system files
 .idea/
