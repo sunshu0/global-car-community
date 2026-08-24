@@ -24,18 +24,30 @@ public class Car {
   @Column(nullable = false)
   private String location;
 
+  @Column(length = 2048)
+  private String imageUrl;
+
   protected Car() {
   }
 
   public Car(String make, String model, String location) {
-    this(null, make, model, location);
+    this(make, model, location, null);
+  }
+
+  public Car(String make, String model, String location, String imageUrl) {
+    this(null, make, model, location, imageUrl);
   }
 
   public Car(Long id, String make, String model, String location) {
+    this(id, make, model, location, null);
+  }
+
+  public Car(Long id, String make, String model, String location, String imageUrl) {
     this.id = id;
     this.make = make;
     this.model = model;
     this.location = location;
+    this.imageUrl = imageUrl;
   }
 
   public Long getId() {
@@ -52,5 +64,9 @@ public class Car {
 
   public String getLocation() {
     return location;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
   }
 }

@@ -24,7 +24,16 @@ public class CarService {
   }
 
   public Car createCar(String make, String model, String location) {
-    Car car = new Car(make, model, location);
+    return createCar(make, model, location, null);
+  }
+
+  public Car createCar(
+      String make,
+      String model,
+      String location,
+      String imageUrl
+  ) {
+    Car car = new Car(make, model, location, imageUrl);
     return carRepository.save(car);
   }
 }

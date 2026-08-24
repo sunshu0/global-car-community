@@ -34,13 +34,15 @@ class CarControllerTest {
                 {
                   "make": "Mazda",
                   "model": "RX-7",
-                  "location": "Auckland, New Zealand"
+                  "location": "Auckland, New Zealand",
+                  "imageUrl": "https://example.com/rx7.jpg"
                 }
                 """))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.make").value("Mazda"))
         .andExpect(jsonPath("$.model").value("RX-7"))
-        .andExpect(jsonPath("$.location").value("Auckland, New Zealand"));
+        .andExpect(jsonPath("$.location").value("Auckland, New Zealand"))
+        .andExpect(jsonPath("$.imageUrl").value("https://example.com/rx7.jpg"));
 
     assertEquals(carCountBefore + 1, carRepository.count());
   }

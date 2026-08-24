@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class CarServiceTest {
 
@@ -67,16 +68,33 @@ class CarServiceTest {
 
   @Test
   void createsCar() {
-    Car savedCar = new Car(4L, "Mazda", "RX-7", "Auckland, New Zealand");
+    String imageUrl = "https://example.com/rx7.jpg";
+    Car savedCar = new Car(
+        4L,
+        "Mazda",
+        "RX-7",
+        "Auckland, New Zealand",
+        imageUrl
+    );
 
     when(carRepository.save(any(Car.class))).thenReturn(savedCar);
 
-    Car createdCar = carService.createCar("Mazda", "RX-7", "Auckland, New Zealand");
+    Car createdCar = carService.createCar(
+        "Mazda",
+        "RX-7",
+        "Auckland, New Zealand",
+        imageUrl
+    );
 
     assertEquals(4L, createdCar.getId());
     assertEquals("Mazda", createdCar.getMake());
     assertEquals("RX-7", createdCar.getModel());
+    assertEquals(imageUrl, createdCar.getImageUrl());
 
-    verify(carRepository).save(any(Car.class));
+    ArgumentCaptor<Car> carCaptor = ArgumentCaptor.forClass(Car.class);
+    verify(carRepository).save(carCaptor.capture());
+
+    Car carPassedToRepository = carCaptor.getValue();
+    assertEquals(imageUrl, carPassedToRepository.getImageUrl());
   }
 }

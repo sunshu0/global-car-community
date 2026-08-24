@@ -34,7 +34,8 @@ public class CarController {
     Car createdCar = carService.createCar(
         request.make(),
         request.model(),
-        request.location()
+        request.location(),
+        request.imageUrl()
     );
 
     return ResponseEntity
