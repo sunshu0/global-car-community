@@ -14,6 +14,11 @@ const isLoading = ref<boolean>(true)
 const loadError = ref<string>('')
 const searchQuery = ref<string>('')
 const selectedCountry = ref<string>('All countries')
+const newMake = ref<string>('')
+const newModel = ref<string>('')
+const newLocation = ref<string>('')
+const isSubmitting = ref<boolean>(false)
+const submitError = ref<string>('')
 
 const filteredCars = computed<Car[]>(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -48,6 +53,47 @@ async function loadCars(): Promise<void> {
   }
 }
 
+async function submitCar(): Promise<void> {
+  const car = {
+    make: newMake.value.trim(),
+    model: newModel.value.trim(),
+    location: newLocation.value.trim(),
+  }
+
+  if (!car.make || !car.model || !car.location) {
+    submitError.value = 'Please complete all fields.'
+    return
+  }
+  isSubmitting.value = true
+  submitError.value = ''
+
+  try {
+    const response = await fetch('/api/cars', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(car),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`)
+    }
+    const createdCar: Car = await response.json()
+    cars.value.push(createdCar)
+    newMake.value = ''
+    newModel.value = ''
+    newLocation.value = ''
+    searchQuery.value = ''
+    selectedCountry.value = 'All countries'
+    statusMessage.value = `${createdCar.make} ${createdCar.model} was added to the garage.`
+  } catch (error) {
+    submitError.value = error instanceof Error ? error.message : 'Unable to add car.'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 onMounted(loadCars)
 
 function exploreCars(): void {
@@ -62,6 +108,21 @@ function exploreCars(): void {
 
     <button type="button" @click="exploreCars">Explore</button>
     <p>{{ statusMessage }}</p>
+    <form class="car-form" @submit.prevent="submitCar">
+      <label for="car-make">Make</label>
+      <input id="car-make" v-model="newMake" type="text" required />
+
+      <label for="car-model">Model</label>
+      <input id="car-model" v-model="newModel" type="text" required />
+
+      <label for="car-location">Location</label>
+      <input id="car-location" v-model="newLocation" type="text" required />
+
+      <button type="submit" :disabled="isSubmitting">
+        {{ isSubmitting ? 'Adding car...' : 'Add car' }}
+      </button>
+      <p v-if="submitError" role="alert">Unable to add car: {{ submitError }}</p>
+    </form>
     <section class="featured-section">
       <h2>Featured cars</h2>
       <label for="car-search">Search cars</label>

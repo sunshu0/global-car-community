@@ -81,4 +81,41 @@ describe('App', () => {
     expect(fetch).toHaveBeenCalledWith('/api/cars')
     expect(wrapper.text()).toContain('Nissan 370Z')
   })
+
+  it('submits a new car and displays it in the garage', async () => {
+    const wrapper = mount(App)
+    await flushPromises()
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({
+        id: 4,
+        make: 'Mazda',
+        model: 'RX-7',
+        location: 'Hiroshima, Japan',
+      }),
+    } as Response)
+
+    await wrapper.get('#car-make').setValue('Mazda')
+    await wrapper.get('#car-model').setValue('RX-7')
+    await wrapper.get('#car-location').setValue('Hiroshima, Japan')
+
+    await wrapper.get('form.car-form').trigger('submit')
+    await flushPromises()
+
+    expect(fetch).toHaveBeenLastCalledWith('/api/cars', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        make: 'Mazda',
+        model: 'RX-7',
+        location: 'Hiroshima, Japan',
+      }),
+    })
+
+    expect(wrapper.text()).toContain('Mazda RX-7')
+  })
 })
