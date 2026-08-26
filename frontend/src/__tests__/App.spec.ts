@@ -11,9 +11,15 @@ describe('App', () => {
         ok: true,
         status: 200,
         json: async () => [
-          { id: 1, make: 'Nissan', model: '370Z', location: 'Auckland, New Zealand' },
-          { id: 2, make: 'Toyota', model: 'Supra', location: 'Tokyo, Japan' },
-          { id: 3, make: 'BMW', model: 'M3', location: 'Munich, Germany' },
+          {
+            id: 1,
+            make: 'Nissan',
+            model: '370Z',
+            location: 'Auckland, New Zealand',
+            imageUrl: null,
+          },
+          { id: 2, make: 'Toyota', model: 'Supra', location: 'Tokyo, Japan', imageUrl: null },
+          { id: 3, make: 'BMW', model: 'M3', location: 'Munich, Germany', imageUrl: null },
         ],
       }),
     )
@@ -94,12 +100,14 @@ describe('App', () => {
         make: 'Mazda',
         model: 'RX-7',
         location: 'Hiroshima, Japan',
+        imageUrl: 'https://example.com/mazda-rx7.jpg',
       }),
     } as Response)
 
     await wrapper.get('#car-make').setValue('Mazda')
     await wrapper.get('#car-model').setValue('RX-7')
     await wrapper.get('#car-location').setValue('Hiroshima, Japan')
+    await wrapper.get('#car-image-url').setValue('https://example.com/mazda-rx7.jpg')
 
     await wrapper.get('form.car-form').trigger('submit')
     await flushPromises()
@@ -113,6 +121,7 @@ describe('App', () => {
         make: 'Mazda',
         model: 'RX-7',
         location: 'Hiroshima, Japan',
+        imageUrl: 'https://example.com/mazda-rx7.jpg',
       }),
     })
 

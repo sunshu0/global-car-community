@@ -7,6 +7,7 @@ interface Car {
   make: string
   model: string
   location: string
+  imageUrl: string | null
 }
 
 const cars = ref<Car[]>([])
@@ -17,6 +18,7 @@ const selectedCountry = ref<string>('All countries')
 const newMake = ref<string>('')
 const newModel = ref<string>('')
 const newLocation = ref<string>('')
+const newImageUrl = ref<string>('')
 const isSubmitting = ref<boolean>(false)
 const submitError = ref<string>('')
 
@@ -58,6 +60,7 @@ async function submitCar(): Promise<void> {
     make: newMake.value.trim(),
     model: newModel.value.trim(),
     location: newLocation.value.trim(),
+    imageUrl: newImageUrl.value.trim() || null,
   }
 
   if (!car.make || !car.model || !car.location) {
@@ -84,6 +87,7 @@ async function submitCar(): Promise<void> {
     newMake.value = ''
     newModel.value = ''
     newLocation.value = ''
+    newImageUrl.value = ''
     searchQuery.value = ''
     selectedCountry.value = 'All countries'
     statusMessage.value = `${createdCar.make} ${createdCar.model} was added to the garage.`
@@ -117,6 +121,13 @@ function exploreCars(): void {
 
       <label for="car-location">Location</label>
       <input id="car-location" v-model="newLocation" type="text" required />
+      <label for="car-image-url">Image URL</label>
+      <input
+        id="car-image-url"
+        v-model="newImageUrl"
+        type="url"
+        placeholder="https://example.com/car.jpg"
+      />
 
       <button type="submit" :disabled="isSubmitting">
         {{ isSubmitting ? 'Adding car...' : 'Add car' }}
@@ -159,6 +170,7 @@ function exploreCars(): void {
           :make="car.make"
           :model="car.model"
           :location="car.location"
+          :image-url="car.imageUrl"
         />
       </div>
     </section>
