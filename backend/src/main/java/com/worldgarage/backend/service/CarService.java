@@ -37,4 +37,12 @@ public class CarService {
     Car car = new Car(make, model, location, imageUrl);
     return carRepository.save(car);
   }
+
+  public Optional<Car> approveCar(long id) {
+    return carRepository.findById(id)
+        .map(car -> {
+          car.approve();
+          return carRepository.save(car);
+        });
+  }
 }

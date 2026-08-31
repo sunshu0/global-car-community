@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -108,5 +109,38 @@ class CarServiceTest {
     Car carPassedToRepository = carCaptor.getValue();
     assertEquals(imageUrl, carPassedToRepository.getImageUrl());
     assertEquals(ReviewStatus.PENDING, carPassedToRepository.getReviewStatus());
+  }
+
+  @Test
+  void approvesCarWhenIdExists() {
+    Car pendingCar = new Car(
+        4L,
+        "Mazda",
+        "RX-7",
+        "Hiroshima, Japan"
+    );
+
+    when(carRepository.findById(4L))
+        .thenReturn(Optional.of(pendingCar));
+    when(carRepository.save(pendingCar))
+        .thenReturn(pendingCar);
+
+    Car approvedCar = carService.approveCar(4L).orElseThrow();
+
+    assertEquals(ReviewStatus.APPROVED, approvedCar.getReviewStatus());
+    verify(carRepository).findById(4L);
+    verify(carRepository).save(pendingCar);
+  }
+
+  @Test
+  void returnsEmptyWhenApprovingMissingCar() {
+    when(carRepository.findById(99L))
+        .thenReturn(Optional.empty());
+
+    Optional<Car> result = carService.approveCar(99L);
+
+    assertTrue(result.isEmpty());
+    verify(carRepository).findById(99L);
+    verify(carRepository, never()).save(any(Car.class));
   }
 }
