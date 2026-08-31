@@ -88,7 +88,7 @@ describe('App', () => {
     expect(wrapper.text()).toContain('Nissan 370Z')
   })
 
-  it('submits a new car and displays it in the garage', async () => {
+  it('submits a new car for review without displaying it publicly', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
@@ -101,6 +101,7 @@ describe('App', () => {
         model: 'RX-7',
         location: 'Hiroshima, Japan',
         imageUrl: 'https://example.com/mazda-rx7.jpg',
+        reviewStatus: 'PENDING',
       }),
     } as Response)
 
@@ -125,6 +126,7 @@ describe('App', () => {
       }),
     })
 
-    expect(wrapper.text()).toContain('Mazda RX-7')
+    expect(wrapper.get('.car-grid').text()).not.toContain('Mazda RX-7')
+    expect(wrapper.text()).toContain('Mazda RX-7 was submitted for review.')
   })
 })

@@ -83,14 +83,14 @@ async function submitCar(): Promise<void> {
       throw new Error(`Request failed with status ${response.status}`)
     }
     const createdCar: Car = await response.json()
-    cars.value.push(createdCar)
     newMake.value = ''
     newModel.value = ''
     newLocation.value = ''
     newImageUrl.value = ''
     searchQuery.value = ''
     selectedCountry.value = 'All countries'
-    statusMessage.value = `${createdCar.make} ${createdCar.model} was added to the garage.`
+    statusMessage.value =
+      `${createdCar.make} ${createdCar.model} was submitted for review.`
   } catch (error) {
     submitError.value = error instanceof Error ? error.message : 'Unable to add car.'
   } finally {
