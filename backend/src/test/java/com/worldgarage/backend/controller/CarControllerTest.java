@@ -6,12 +6,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.worldgarage.backend.model.Car;
+import com.worldgarage.backend.model.ReviewStatus;
 import com.worldgarage.backend.repository.CarRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -25,7 +27,7 @@ class CarControllerTest {
   private CarRepository carRepository;
 
   @Test
-  void createsCar() throws Exception {
+  void createsPendingCarThatIsNotPubliclyVisible() throws Exception {
     long carCountBefore = carRepository.count();
 
     mockMvc.perform(post("/api/cars")
@@ -42,9 +44,19 @@ class CarControllerTest {
         .andExpect(jsonPath("$.make").value("Mazda"))
         .andExpect(jsonPath("$.model").value("RX-7"))
         .andExpect(jsonPath("$.location").value("Auckland, New Zealand"))
-        .andExpect(jsonPath("$.imageUrl").value("https://example.com/rx7.jpg"));
-
+        .andExpect(jsonPath("$.imageUrl").value("https://example.com/rx7.jpg"))
+        .andExpect(jsonPath("$.reviewStatus").value("PENDING"));
     assertEquals(carCountBefore + 1, carRepository.count());
+
+    Car pendingCar = carRepository
+        .findAllByReviewStatus(ReviewStatus.PENDING)
+        .stream()
+        .filter(car -> car.getMake().equals("Mazda"))
+        .findFirst()
+        .orElseThrow();
+
+    mockMvc.perform(get("/api/cars/{id}", pendingCar.getId()))
+        .andExpect(status().isNotFound());
   }
 
   @Test

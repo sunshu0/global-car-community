@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.worldgarage.backend.model.Car;
+import com.worldgarage.backend.model.ReviewStatus;
 import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
 import java.util.Optional;
@@ -34,36 +35,46 @@ class CarServiceTest {
         new Car(3L, "BMW", "M3", "Munich, Germany")
     );
 
-    when(carRepository.findAll()).thenReturn(repositoryCars);
+    when(carRepository.findAllByReviewStatus(ReviewStatus.APPROVED)).thenReturn(repositoryCars);
 
     List<Car> cars = carService.getAllCars();
 
     assertEquals(3, cars.size());
     assertEquals("Nissan", cars.get(0).getMake());
     assertEquals("370Z", cars.get(0).getModel());
+    verify(carRepository)
+        .findAllByReviewStatus(ReviewStatus.APPROVED);
   }
 
   @Test
   void returnsCarWhenIdExists() {
     Car repositoryCar = new Car(2L, "Toyota", "Supra", "Tokyo, Japan");
 
-    when(carRepository.findById(2L))
+    when(carRepository.findByIdAndReviewStatus(2L, ReviewStatus.APPROVED))
         .thenReturn(Optional.of(repositoryCar));
 
     Car car = carService.getCarById(2L).orElseThrow();
 
     assertEquals("Toyota", car.getMake());
     assertEquals("Supra", car.getModel());
+    verify(carRepository).findByIdAndReviewStatus(
+        2L,
+        ReviewStatus.APPROVED
+    );
   }
 
   @Test
   void returnsEmptyWhenIdDoesNotExist() {
-    when(carRepository.findById(99L))
+    when(carRepository.findByIdAndReviewStatus(99L, ReviewStatus.APPROVED))
         .thenReturn(Optional.empty());
 
     boolean resultIsEmpty = carService.getCarById(99L).isEmpty();
 
     assertTrue(resultIsEmpty);
+    verify(carRepository).findByIdAndReviewStatus(
+        99L,
+        ReviewStatus.APPROVED
+    );
   }
 
   @Test
@@ -96,5 +107,6 @@ class CarServiceTest {
 
     Car carPassedToRepository = carCaptor.getValue();
     assertEquals(imageUrl, carPassedToRepository.getImageUrl());
+    assertEquals(ReviewStatus.PENDING, carPassedToRepository.getReviewStatus());
   }
 }

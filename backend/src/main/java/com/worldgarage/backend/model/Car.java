@@ -2,10 +2,13 @@ package com.worldgarage.backend.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "cars")
@@ -26,6 +29,11 @@ public class Car {
 
   @Column(length = 2048)
   private String imageUrl;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  @ColumnDefault("'APPROVED'")
+  private ReviewStatus reviewStatus = ReviewStatus.PENDING;
 
   protected Car() {
   }
@@ -50,6 +58,10 @@ public class Car {
     this.imageUrl = imageUrl;
   }
 
+  public void approve() {
+    reviewStatus = ReviewStatus.APPROVED;
+  }
+
   public Long getId() {
     return id;
   }
@@ -68,5 +80,9 @@ public class Car {
 
   public String getImageUrl() {
     return imageUrl;
+  }
+
+  public ReviewStatus getReviewStatus() {
+    return reviewStatus;
   }
 }

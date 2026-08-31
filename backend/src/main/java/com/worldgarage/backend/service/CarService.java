@@ -1,6 +1,7 @@
 package com.worldgarage.backend.service;
 
 import com.worldgarage.backend.model.Car;
+import com.worldgarage.backend.model.ReviewStatus;
 import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
 import java.util.Optional;
@@ -16,11 +17,11 @@ public class CarService {
   }
 
   public List<Car> getAllCars() {
-    return carRepository.findAll();
+    return carRepository.findAllByReviewStatus(ReviewStatus.APPROVED);
   }
 
   public Optional<Car> getCarById(long id) {
-    return carRepository.findById(id);
+    return carRepository.findByIdAndReviewStatus(id, ReviewStatus.APPROVED);
   }
 
   public Car createCar(String make, String model, String location) {

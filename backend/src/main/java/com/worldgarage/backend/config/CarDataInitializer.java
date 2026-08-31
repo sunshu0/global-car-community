@@ -14,11 +14,27 @@ public class CarDataInitializer {
   CommandLineRunner loadCars(CarRepository carRepository) {
     return args -> {
       if (carRepository.count() == 0) {
-        carRepository.saveAll(List.of(
-            new Car("Nissan", "370Z", "Auckland, New Zealand"),
-            new Car("Toyota", "Supra", "Tokyo, Japan"),
-            new Car("BMW", "M3", "Munich, Germany")
-        ));
+        Car nissan = new Car(
+            "Nissan",
+            "370Z",
+            "Auckland, New Zealand"
+        );
+        Car toyota = new Car(
+            "Toyota",
+            "Supra",
+            "Tokyo, Japan"
+        );
+        Car bmw = new Car(
+            "BMW",
+            "M3",
+            "Munich, Germany"
+        );
+
+        nissan.approve();
+        toyota.approve();
+        bmw.approve();
+
+        carRepository.saveAll(List.of(nissan, toyota, bmw));
       }
     };
   }
