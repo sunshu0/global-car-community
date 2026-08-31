@@ -10,9 +10,13 @@ backend/target/
 # Local uploads and runtime data
 uploads/
 backend/data/
+/data/
 
 # IDE and operating-system files
 .idea/
 .vscode/
+!/.vscode/
+/.vscode/*
+!/.vscode/launch.json
 .DS_Store
 Thumbs.db
