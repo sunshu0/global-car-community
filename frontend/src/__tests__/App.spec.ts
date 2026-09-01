@@ -31,16 +31,15 @@ describe('App', () => {
 
   it('mounts renders properly', () => {
     const wrapper = mount(App)
-    expect(wrapper.text()).toContain('WORLD GARAGE')
+    expect(wrapper.get('.wordmark').text()).toBe('WORLDGARAGE')
     expect(wrapper.text()).toContain('Discover real cars from around the world')
   })
 
-  it('updates status message when explore button is clicked', async () => {
+  it('links the hero action to the public garage', () => {
     const wrapper = mount(App)
 
-    await wrapper.get('button').trigger('click')
-
-    expect(wrapper.text()).toContain('The car gallery is coming next.')
+    const exploreLink = wrapper.get('.hero-actions a[href="#garage"]')
+    expect(exploreLink.text()).toContain('Explore the collection')
   })
 
   it('filters cars based on search query', async () => {

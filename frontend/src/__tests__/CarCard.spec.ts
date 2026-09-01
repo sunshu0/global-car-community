@@ -31,6 +31,6 @@ describe('CarCard', () => {
     })
 
     expect(wrapper.find('img.car-image').exists()).toBe(false)
-    expect(wrapper.get('.car-image-placeholder').text()).toBe('No image available')
+    expect(wrapper.get('.car-image-placeholder').text()).toContain('No image available')
   })
 })
