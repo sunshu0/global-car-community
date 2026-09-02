@@ -53,4 +53,38 @@ class AuthControllerTest {
     assertTrue(
         passwordEncoder.matches("Garage@2026", savedUser.getPasswordHash()));
   }
+
+  @Test
+  void returnsConflictWhenEmailAlreadyExists() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "email": "duplicate@example.com",
+                      "password": "Garage@2026",
+                      "displayName": "First Owner"
+                    }
+                    """))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "email": " Duplicate@Example.com ",
+                      "password": "AnotherPassword@2026",
+                      "displayName": "Second Owner"
+                    }
+                    """))
+        .andExpect(status().isConflict())
+        .andExpect(
+            jsonPath("$.message")
+                .value("Email already exists: duplicate@example.com"));
+  }
 }

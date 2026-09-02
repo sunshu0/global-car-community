@@ -1,5 +1,6 @@
 package com.worldgarage.backend.service;
 
+import com.worldgarage.backend.exception.EmailAlreadyRegisteredException;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.UserAccountRepository;
 import java.util.Locale;
@@ -22,7 +23,7 @@ public class UserAccountService {
     String normalizedEmail = email.toLowerCase(Locale.ROOT).trim();
 
     if (userAccountRepository.existsByEmail(normalizedEmail)) {
-      throw new IllegalArgumentException("Email already exists: " + normalizedEmail);
+      throw new EmailAlreadyRegisteredException(normalizedEmail);
     }
 
     String passwordHash = passwordEncoder.encode(rawPassword);

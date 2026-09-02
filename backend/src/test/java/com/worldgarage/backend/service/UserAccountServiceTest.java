@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.worldgarage.backend.exception.EmailAlreadyRegisteredException;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.model.UserRole;
 import com.worldgarage.backend.repository.UserAccountRepository;
@@ -67,9 +68,9 @@ class UserAccountServiceTest {
   void rejectsRegistrationIfEmailAlreadyExists() {
     when(userAccountRepository.existsByEmail("owner@example.com")).thenReturn(true);
 
-    IllegalArgumentException exception =
+    EmailAlreadyRegisteredException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            EmailAlreadyRegisteredException.class,
             () ->
                 userAccountService.register(
                     "Owner@Example.com", "Garage@2026", "Garage Owner"));
