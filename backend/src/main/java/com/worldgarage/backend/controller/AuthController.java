@@ -4,6 +4,7 @@ import com.worldgarage.backend.dto.RegisterUserRequest;
 import com.worldgarage.backend.dto.RegisterUserResponse;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.service.UserAccountService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<RegisterUserResponse> register(
-      @RequestBody RegisterUserRequest request) {
+      @Valid @RequestBody RegisterUserRequest request) {
 
     UserAccount registeredUser =
         userAccountService.register(

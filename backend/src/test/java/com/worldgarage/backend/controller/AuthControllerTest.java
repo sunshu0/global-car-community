@@ -1,5 +1,6 @@
 package com.worldgarage.backend.controller;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -77,7 +78,7 @@ class AuthControllerTest {
                 .content(
                     """
                     {
-                      "email": " Duplicate@Example.com ",
+                      "email": "Duplicate@Example.com",
                       "password": "AnotherPassword@2026",
                       "displayName": "Second Owner"
                     }
@@ -86,5 +87,33 @@ class AuthControllerTest {
         .andExpect(
             jsonPath("$.message")
                 .value("Email already exists: duplicate@example.com"));
+  }
+
+  @Test
+  void returnsBadRequestWhenRegistrationIsInvalid() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "email": "invalid-email",
+                      "password": "short",
+                      "displayName": ""
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.errors.email")
+                .value("Email must be valid."))
+        .andExpect(
+            jsonPath("$.errors.password")
+                .value("Password must be between 8 and 72 characters."))
+        .andExpect(
+            jsonPath("$.errors.displayName")
+                .value("Display name is required"));
+
+    assertFalse(userAccountRepository.existsByEmail("invalid-email"));
   }
 }
