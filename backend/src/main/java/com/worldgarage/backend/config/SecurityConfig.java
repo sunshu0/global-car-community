@@ -20,11 +20,16 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/cars"))
+    return http.csrf(
+            csrf ->
+                csrf.ignoringRequestMatchers(
+                    "/api/cars", "/api/auth/register"))
         .authorizeHttpRequests(
             authorize ->
                 authorize
                     .dispatcherTypeMatchers(DispatcherType.ERROR)
+                    .permitAll()
+                    .requestMatchers("/api/auth/register")
                     .permitAll()
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")
