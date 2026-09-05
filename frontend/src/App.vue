@@ -1,292 +1,46 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import heroImage from './assets/world-garage-hero.jpg'
-import CarCard from './components/CarCard.vue'
-import AuthPanel from './components/AuthPanel.vue'
-import { postWithCsrf } from './api/auth'
-import type { Car } from './api/cars'
-
-const cars = ref<Car[]>([])
-const isLoading = ref<boolean>(true)
-const loadError = ref<string>('')
-const searchQuery = ref<string>('')
-const selectedCountry = ref<string>('All countries')
-const newMake = ref<string>('')
-const newModel = ref<string>('')
-const newLocation = ref<string>('')
-const newImageUrl = ref<string>('')
-const isSubmitting = ref<boolean>(false)
-const submitError = ref<string>('')
-const statusMessage = ref<string>('')
-
-const tagline = 'Discover real cars from around the world'
-
-const filteredCars = computed<Car[]>(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-
-  return cars.value.filter((car) => {
-    const searchableText = `${car.make} ${car.model} ${car.location}`.toLowerCase()
-    const matchesSearch = query === '' || searchableText.includes(query)
-    const matchesCountry =
-      selectedCountry.value === 'All countries' || car.location.endsWith(selectedCountry.value)
-
-    return matchesSearch && matchesCountry
-  })
-})
-
-async function loadCars(): Promise<void> {
-  try {
-    const response = await fetch('/api/cars')
-
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`)
-    }
-
-    cars.value = await response.json()
-  } catch (error) {
-    loadError.value = error instanceof Error ? error.message : 'Unable to load cars.'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function submitCar(): Promise<void> {
-  const car = {
-    make: newMake.value.trim(),
-    model: newModel.value.trim(),
-    location: newLocation.value.trim(),
-    imageUrl: newImageUrl.value.trim() || null,
-  }
-
-  if (!car.make || !car.model || !car.location) {
-    submitError.value = 'Please complete all fields.'
-    return
-  }
-
-  isSubmitting.value = true
-  submitError.value = ''
-  statusMessage.value = ''
-
-  try {
-    const response = await postWithCsrf('/api/cars', car)
-
-    const createdCar: Car = await response.json()
-    window.dispatchEvent(new Event('world-garage:car-submitted'))
-
-    newMake.value = ''
-    newModel.value = ''
-    newLocation.value = ''
-    newImageUrl.value = ''
-    searchQuery.value = ''
-    selectedCountry.value = 'All countries'
-    statusMessage.value = `${createdCar.make} ${createdCar.model} was submitted for review.`
-  } catch (error) {
-    submitError.value = error instanceof Error ? error.message : 'Unable to add car.'
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-onMounted(loadCars)
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
   <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="World Garage home">
+    <RouterLink class="wordmark" to="/" aria-label="World Garage home">
       <span>WORLD</span>
       <span>GARAGE</span>
-    </a>
+    </RouterLink>
 
     <nav aria-label="Primary navigation">
-      <a href="#garage">The Garage</a>
-      <a href="#submit">Submit a car</a>
-      <a href="#account">Your account</a>
+      <RouterLink to="/garage">The Garage</RouterLink>
+      <RouterLink to="/submit">Submit a car</RouterLink>
+      <RouterLink to="/account">Your account</RouterLink>
     </nav>
 
     <span class="edition-label">Independent motor culture</span>
   </header>
 
   <main id="top">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <p class="eyebrow">Issue 001 · New Zealand</p>
-        <h1 id="hero-title">Built to be driven.<br />Shared to be remembered.</h1>
-        <p class="hero-intro">
-          {{ tagline }}, told through the machines, places, and people that make every garage
-          personal.
-        </p>
-
-        <div class="hero-actions">
-          <a class="button button--primary" href="#garage">Explore the collection</a>
-          <a class="button button--quiet" href="#submit">Submit your car</a>
-        </div>
-
-        <p class="issue-note">A living archive of owner-submitted cars.</p>
-      </div>
-
-      <figure class="hero-visual">
-        <img
-          :src="heroImage"
-          alt="Blue Nissan 370Z parked against a black-and-white New Zealand landscape"
-        />
-        <figcaption>
-          <span>Owner's spotlight</span>
-          Nissan 370Z · New Zealand
-        </figcaption>
-      </figure>
-    </section>
-
-    <section class="editorial-strip" aria-label="World Garage principles">
-      <p><span>01</span> Independent builds</p>
-      <p><span>02</span> Worldwide perspective</p>
-      <p><span>03</span> Reviewed submissions</p>
-    </section>
-
-    <section id="garage" class="garage-section" aria-labelledby="garage-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow eyebrow--dark">The public garage</p>
-          <h2 id="garage-title">Cars worth a closer look.</h2>
-        </div>
-        <p class="section-deck">
-          Browse approved cars from the community. Search by make, model, or the place each car
-          calls home.
-        </p>
-      </div>
-
-      <div class="filters" aria-label="Filter cars">
-        <div class="field field--search">
-          <label for="car-search">Search the archive</label>
-          <input
-            id="car-search"
-            v-model="searchQuery"
-            type="search"
-            placeholder="Make, model, or location"
-          />
-        </div>
-
-        <div class="field field--country">
-          <label for="country-filter">Country</label>
-          <select id="country-filter" v-model="selectedCountry">
-            <option value="All countries">All countries</option>
-            <option value="New Zealand">New Zealand</option>
-            <option value="Japan">Japan</option>
-            <option value="Germany">Germany</option>
-            <option value="USA">USA</option>
-            <option value="Italy">Italy</option>
-          </select>
-        </div>
-
-        <p class="result-count" aria-live="polite">
-          {{ isLoading ? 'Loading archive' : `${filteredCars.length} cars on display` }}
-        </p>
-      </div>
-
-      <p v-if="searchQuery" class="search-summary">Search results for "{{ searchQuery }}"</p>
-
-      <p v-if="isLoading" class="empty-state">Loading cars...</p>
-      <p v-else-if="loadError" class="empty-state">Unable to load cars: {{ loadError }}</p>
-      <p v-else-if="filteredCars.length === 0" class="empty-state">
-        No cars found matching your search.
-      </p>
-
-      <div v-else class="car-grid">
-        <CarCard
-          v-for="car in filteredCars"
-          :key="car.id"
-          :make="car.make"
-          :model="car.model"
-          :location="car.location"
-          :image-url="car.imageUrl"
-        />
-      </div>
-    </section>
-
-    <section id="submit" class="submission-section" aria-labelledby="submission-title">
-      <div class="submission-intro">
-        <p class="eyebrow">Community submissions</p>
-        <h2 id="submission-title">Put your car in the next issue.</h2>
-        <p>
-          Tell us what you drive and where it lives. Every submission enters review before it
-          appears in the public garage.
-        </p>
-
-        <div class="review-note">
-          <span>Editorial note</span>
-          Submitting creates a pending entry. It does not publish the car immediately.
-        </div>
-      </div>
-
-      <form class="car-form" @submit.prevent="submitCar">
-        <div class="form-field">
-          <label for="car-make">Make</label>
-          <input id="car-make" v-model="newMake" type="text" placeholder="Nissan" required />
-        </div>
-
-        <div class="form-field">
-          <label for="car-model">Model</label>
-          <input id="car-model" v-model="newModel" type="text" placeholder="370Z" required />
-        </div>
-
-        <div class="form-field">
-          <label for="car-location">Location</label>
-          <input
-            id="car-location"
-            v-model="newLocation"
-            type="text"
-            placeholder="Auckland, New Zealand"
-            required
-          />
-        </div>
-
-        <div class="form-field">
-          <label for="car-image-url">Image URL <span>Optional</span></label>
-          <input
-            id="car-image-url"
-            v-model="newImageUrl"
-            type="url"
-            placeholder="https://example.com/car.jpg"
-          />
-        </div>
-
-        <div class="form-footer">
-          <button type="submit" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Submitting...' : 'Submit for review' }}
-          </button>
-          <p class="form-terms">Public only after administrator approval.</p>
-        </div>
-
-        <p v-if="submitError" class="form-message form-message--error" role="alert">
-          Unable to add car: {{ submitError }}
-        </p>
-        <p v-if="statusMessage" class="form-message form-message--success" role="status">
-          {{ statusMessage }}
-        </p>
-      </form>
-    </section>
-    <AuthPanel />
+    <RouterView />
   </main>
 
   <footer class="site-footer">
-    <a class="wordmark wordmark--footer" href="#top">
+    <RouterLink class="wordmark wordmark--footer" to="/">
       <span>WORLD</span>
       <span>GARAGE</span>
-    </a>
+    </RouterLink>
     <p>Cars, culture, and the stories between destinations.</p>
     <p>World Garage · 2026</p>
   </footer>
 </template>
-
-<style scoped>
-:global(*) {
+<style>
+* {
   box-sizing: border-box;
 }
 
-:global(html) {
+html {
   scroll-behavior: smooth;
 }
 
-:global(body) {
+body {
   margin: 0;
   min-width: 320px;
   background: #0b0b0b;
@@ -295,13 +49,13 @@ onMounted(loadCars)
   text-rendering: optimizeLegibility;
 }
 
-:global(button),
-:global(input),
-:global(select) {
+button,
+input,
+select {
   font: inherit;
 }
 
-:global(a) {
+a {
   color: inherit;
 }
 
@@ -349,8 +103,13 @@ nav a {
 }
 
 nav a:hover,
-nav a:focus-visible {
+nav a:focus-visible,
+nav a.router-link-active {
   color: #fff;
+}
+
+nav a.router-link-active {
+  border-bottom: 1px solid #d83a2e;
 }
 
 .edition-label {

@@ -1,31 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { flushPromises, mount } from '@vue/test-utils'
+import { createMemoryHistory, createRouter } from 'vue-router'
+
 import App from '../App.vue'
+import GarageView from '../views/GarageView.vue'
+import HomeView from '../views/HomeView.vue'
+import SubmitView from '../views/SubmitView.vue'
 
-// Account behavior has its own tests; keep car request mocks isolated.
-vi.mock('../components/AuthPanel.vue', () => ({
-  default: { template: '<section id="account"></section>' },
-}))
+const cars = [
+  {
+    id: 1,
+    make: 'Nissan',
+    model: '370Z',
+    location: 'Auckland, New Zealand',
+    imageUrl: null,
+  },
+  { id: 2, make: 'Toyota', model: 'Supra', location: 'Tokyo, Japan', imageUrl: null },
+  { id: 3, make: 'BMW', model: 'M3', location: 'Munich, Germany', imageUrl: null },
+]
 
-describe('App', () => {
+describe('World Garage pages', () => {
   beforeEach(() => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: 1,
-            make: 'Nissan',
-            model: '370Z',
-            location: 'Auckland, New Zealand',
-            imageUrl: null,
-          },
-          { id: 2, make: 'Toyota', model: 'Supra', location: 'Tokyo, Japan', imageUrl: null },
-          { id: 3, make: 'BMW', model: 'M3', location: 'Munich, Germany', imageUrl: null },
-        ],
+        json: async () => cars,
       }),
     )
   })
@@ -34,25 +35,33 @@ describe('App', () => {
     vi.unstubAllGlobals()
   })
 
-  it('mounts renders properly', () => {
-    const wrapper = mount(App)
+  it('renders the home page through the router', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: HomeView }],
+    })
+    await router.push('/')
+    await router.isReady()
+
+    const wrapper = mount(App, { global: { plugins: [router] } })
+
     expect(wrapper.get('.wordmark').text()).toBe('WORLDGARAGE')
     expect(wrapper.text()).toContain('Discover real cars from around the world')
+    expect(wrapper.get('.hero-actions a').attributes('href')).toBe('/garage')
   })
 
-  it('links the hero action to the public garage', () => {
-    const wrapper = mount(App)
+  it('loads cars from the backend endpoint', async () => {
+    const wrapper = mount(GarageView)
+    await flushPromises()
 
-    const exploreLink = wrapper.get('.hero-actions a[href="#garage"]')
-    expect(exploreLink.text()).toContain('Explore the collection')
+    expect(fetch).toHaveBeenCalledWith('/api/cars')
+    expect(wrapper.text()).toContain('Nissan 370Z')
   })
 
   it('filters cars based on search query', async () => {
-    const wrapper = mount(App)
+    const wrapper = mount(GarageView)
     await flushPromises()
-    const searchInput = wrapper.get('#car-search')
-
-    await searchInput.setValue('Nissan')
+    await wrapper.get('#car-search').setValue('Nissan')
 
     expect(wrapper.text()).toContain('Nissan 370Z')
     expect(wrapper.text()).not.toContain('Toyota Supra')
@@ -60,65 +69,49 @@ describe('App', () => {
   })
 
   it('filters cars by selected country', async () => {
-    const wrapper = mount(App)
+    const wrapper = mount(GarageView)
     await flushPromises()
-    const countryFilter = wrapper.get('#country-filter')
-
-    await countryFilter.setValue('Germany')
+    await wrapper.get('#country-filter').setValue('Germany')
 
     const carCards = wrapper.findAll('.car-card')
-
     expect(carCards).toHaveLength(1)
-    expect(carCards.every((card) => card.text().includes('Germany'))).toBe(true)
+    expect(carCards[0]?.text()).toContain('Germany')
   })
 
   it('shows an empty state when no cars match', async () => {
-    const wrapper = mount(App)
+    const wrapper = mount(GarageView)
     await flushPromises()
-    const searchInput = wrapper.get('#car-search')
-
-    await searchInput.setValue('Nonexistent Car')
+    await wrapper.get('#car-search').setValue('Nonexistent Car')
 
     expect(wrapper.text()).toContain('No cars found matching your search.')
     expect(wrapper.findAll('.car-card')).toHaveLength(0)
   })
 
-  it('loads cars from the backend endpoint', async () => {
-    const wrapper = mount(App)
-
-    await flushPromises()
-
-    expect(fetch).toHaveBeenCalledWith('/api/cars')
-    expect(wrapper.text()).toContain('Nissan 370Z')
-  })
-
-  it('submits a new car for review without displaying it publicly', async () => {
-    const wrapper = mount(App)
-    await flushPromises()
-
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'car-token' }),
-    } as Response)
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: async () => ({
-        id: 4,
-        make: 'Mazda',
-        model: 'RX-7',
-        location: 'Hiroshima, Japan',
-        imageUrl: 'https://example.com/mazda-rx7.jpg',
-        reviewStatus: 'PENDING',
-      }),
-    } as Response)
+  it('submits a new car for review', async () => {
+    const wrapper = mount(SubmitView)
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'car-token' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          id: 4,
+          make: 'Mazda',
+          model: 'RX-7',
+          location: 'Hiroshima, Japan',
+          imageUrl: 'https://example.com/mazda-rx7.jpg',
+          reviewStatus: 'PENDING',
+        }),
+      } as Response)
 
     await wrapper.get('#car-make').setValue('Mazda')
     await wrapper.get('#car-model').setValue('RX-7')
     await wrapper.get('#car-location').setValue('Hiroshima, Japan')
     await wrapper.get('#car-image-url').setValue('https://example.com/mazda-rx7.jpg')
-
     await wrapper.get('form.car-form').trigger('submit')
     await flushPromises()
 
@@ -136,15 +129,11 @@ describe('App', () => {
         imageUrl: 'https://example.com/mazda-rx7.jpg',
       }),
     })
-
-    expect(wrapper.get('.car-grid').text()).not.toContain('Mazda RX-7')
     expect(wrapper.text()).toContain('Mazda RX-7 was submitted for review.')
   })
 
   it('tells anonymous users to sign in before submitting', async () => {
-    const wrapper = mount(App)
-    await flushPromises()
-
+    const wrapper = mount(SubmitView)
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
