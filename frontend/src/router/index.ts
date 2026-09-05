@@ -8,6 +8,12 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView },
     { path: '/garage', name: 'garage', component: GarageView },
+    {
+      path: '/cars/:id',
+      name: 'car-detail',
+      component: () => import('../views/CarDetailView.vue'),
+      props: true,
+    },
     { path: '/submit', name: 'submit', component: () => import('../views/SubmitView.vue') },
     { path: '/account', name: 'account', component: () => import('../views/AccountView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },

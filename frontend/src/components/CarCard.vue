@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
+
 defineProps<{
+  id: number
   make: string
   model: string
   location: string
@@ -8,34 +11,47 @@ defineProps<{
 </script>
 
 <template>
-  <article class="car-card">
-    <div class="car-media">
-      <img
-        v-if="imageUrl"
-        class="car-image"
-        :src="imageUrl"
-        :alt="`${make} ${model}`"
-        loading="lazy"
-      />
-      <div v-else class="car-image-placeholder">
-        <span>World Garage</span>
-        No image available
+  <RouterLink class="car-card-link" :to="`/cars/${id}`" :aria-label="`View ${make} ${model}`">
+    <article class="car-card">
+      <div class="car-media">
+        <img
+          v-if="imageUrl"
+          class="car-image"
+          :src="imageUrl"
+          :alt="`${make} ${model}`"
+          loading="lazy"
+        />
+        <div v-else class="car-image-placeholder">
+          <span>World Garage</span>
+          No image available
+        </div>
+
+        <span class="card-label">Garage entry</span>
       </div>
 
-      <span class="card-label">Garage entry</span>
-    </div>
-
-    <div class="card-copy">
-      <p class="car-location">{{ location }}</p>
-      <h3>
-        {{ make }} <em>{{ model }}</em>
-      </h3>
-      <p class="card-note">Community collection</p>
-    </div>
-  </article>
+      <div class="card-copy">
+        <p class="car-location">{{ location }}</p>
+        <h3>
+          {{ make }} <em>{{ model }}</em>
+        </h3>
+        <p class="card-note">Open garage entry →</p>
+      </div>
+    </article>
+  </RouterLink>
 </template>
 
 <style scoped>
+.car-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.car-card-link:focus-visible {
+  outline: 3px solid #b82c22;
+  outline-offset: 6px;
+}
+
 .car-card {
   min-width: 0;
   color: #171717;
@@ -62,7 +78,7 @@ defineProps<{
     filter 300ms ease;
 }
 
-.car-card:hover .car-image {
+.car-card-link:hover .car-image {
   filter: saturate(1.08) contrast(1.03);
   transform: scale(1.025);
 }

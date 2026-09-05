@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
 import App from '../App.vue'
@@ -18,6 +18,12 @@ const cars = [
   { id: 2, make: 'Toyota', model: 'Supra', location: 'Tokyo, Japan', imageUrl: null },
   { id: 3, make: 'BMW', model: 'M3', location: 'Munich, Germany', imageUrl: null },
 ]
+
+function mountGarage() {
+  return mount(GarageView, {
+    global: { stubs: { RouterLink: RouterLinkStub } },
+  })
+}
 
 describe('World Garage pages', () => {
   beforeEach(() => {
@@ -38,7 +44,10 @@ describe('World Garage pages', () => {
   it('renders the home page through the router', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/', component: HomeView }],
+      routes: [
+        { path: '/', component: HomeView },
+        { path: '/cars/:id', component: { template: '<div />' } },
+      ],
     })
     await router.push('/')
     await router.isReady()
@@ -52,15 +61,16 @@ describe('World Garage pages', () => {
   })
 
   it('loads cars from the backend endpoint', async () => {
-    const wrapper = mount(GarageView)
+    const wrapper = mountGarage()
     await flushPromises()
 
     expect(fetch).toHaveBeenCalledWith('/api/cars')
     expect(wrapper.text()).toContain('Nissan 370Z')
+    expect(wrapper.getComponent(RouterLinkStub).props('to')).toBe('/cars/1')
   })
 
   it('filters cars based on search query', async () => {
-    const wrapper = mount(GarageView)
+    const wrapper = mountGarage()
     await flushPromises()
     await wrapper.get('#car-search').setValue('Nissan')
 
@@ -70,7 +80,7 @@ describe('World Garage pages', () => {
   })
 
   it('filters cars by selected country', async () => {
-    const wrapper = mount(GarageView)
+    const wrapper = mountGarage()
     await flushPromises()
     await wrapper.get('#country-filter').setValue('Germany')
 
@@ -80,7 +90,7 @@ describe('World Garage pages', () => {
   })
 
   it('shows an empty state when no cars match', async () => {
-    const wrapper = mount(GarageView)
+    const wrapper = mountGarage()
     await flushPromises()
     await wrapper.get('#car-search').setValue('Nonexistent Car')
 

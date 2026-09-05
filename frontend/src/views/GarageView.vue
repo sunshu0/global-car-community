@@ -86,6 +86,7 @@ onMounted(loadCars)
       <CarCard
         v-for="car in filteredCars"
         :key="car.id"
+        :id="car.id"
         :make="car.make"
         :model="car.model"
         :location="car.location"
