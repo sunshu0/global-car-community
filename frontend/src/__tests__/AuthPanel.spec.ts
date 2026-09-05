@@ -6,8 +6,9 @@ const owner = { id: 7, email: 'owner@example.com', displayName: 'Garage Owner', 
 function response(status: number, body: unknown = null): Response {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
 }
-function setup(initial = response(401)) {
+function setup(initial = response(401), cars: unknown[] = []) {
   const fetchMock = vi.fn().mockResolvedValueOnce(initial)
+  if (initial.status === 200) fetchMock.mockResolvedValueOnce(response(200, cars))
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
 }
@@ -38,6 +39,7 @@ describe('account authentication', () => {
       .mockResolvedValueOnce(token())
       .mockResolvedValueOnce(response(200))
       .mockResolvedValueOnce(response(200, owner))
+      .mockResolvedValueOnce(response(200, []))
     await fill(wrapper)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
@@ -139,5 +141,32 @@ describe('account authentication', () => {
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     expect(wrapper.get('[role="alert"]').text()).toContain('already registered')
+  })
+
+  it('shows the current users vehicles and review status', async () => {
+    setup(response(200, owner), [
+      {
+        id: 9,
+        make: 'Mazda',
+        model: 'RX-7',
+        location: 'Hiroshima, Japan',
+        imageUrl: null,
+        reviewStatus: 'PENDING',
+      },
+      {
+        id: 4,
+        make: 'Nissan',
+        model: '370Z',
+        location: 'Auckland, New Zealand',
+        imageUrl: null,
+        reviewStatus: 'APPROVED',
+      },
+    ])
+    const wrapper = mount(AuthPanel)
+    await flushPromises()
+    expect(wrapper.get('.my-car-list').text()).toContain('Mazda RX-7')
+    expect(wrapper.get('.my-car-list').text()).toContain('PENDING')
+    expect(wrapper.get('.my-car-list').text()).toContain('Nissan 370Z')
+    expect(wrapper.get('.my-car-list').text()).toContain('APPROVED')
   })
 })

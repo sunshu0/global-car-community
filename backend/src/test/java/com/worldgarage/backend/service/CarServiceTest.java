@@ -178,4 +178,22 @@ class CarServiceTest {
     Car carPassedToRepository = carCaptor.getValue();
     assertSame(owner, carPassedToRepository.getOwner());
   }
+
+  @Test
+  void returnsCarsForNormalizedOwnerEmail() {
+    List<Car> ownerCars =
+        List.of(new Car(5L, "Nissan", "370Z", "Auckland, New Zealand"));
+
+    when(
+        carRepository.findAllByOwnerEmailOrderByIdDesc("owner@example.com"))
+        .thenReturn(ownerCars);
+
+    List<Car> result =
+        carService.getCarsByOwnerEmail(" Owner@Example.com ");
+
+    assertSame(ownerCars, result);
+
+    verify(carRepository)
+        .findAllByOwnerEmailOrderByIdDesc("owner@example.com");
+  }
 }

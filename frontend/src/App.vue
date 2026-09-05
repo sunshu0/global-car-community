@@ -4,14 +4,7 @@ import heroImage from './assets/world-garage-hero.jpg'
 import CarCard from './components/CarCard.vue'
 import AuthPanel from './components/AuthPanel.vue'
 import { postWithCsrf } from './api/auth'
-
-interface Car {
-  id: number
-  make: string
-  model: string
-  location: string
-  imageUrl: string | null
-}
+import type { Car } from './api/cars'
 
 const cars = ref<Car[]>([])
 const isLoading = ref<boolean>(true)
@@ -78,6 +71,7 @@ async function submitCar(): Promise<void> {
     const response = await postWithCsrf('/api/cars', car)
 
     const createdCar: Car = await response.json()
+    window.dispatchEvent(new Event('world-garage:car-submitted'))
 
     newMake.value = ''
     newModel.value = ''

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getCurrentUser, login, logout, register, type CurrentUser } from '../api/auth'
+import { getMyCars, type Car } from '../api/cars'
 
 const user = ref<CurrentUser | null>(null)
 const mode = ref<'login' | 'register'>('login')
@@ -11,6 +12,9 @@ const busy = ref(false)
 const loading = ref(true)
 const error = ref('')
 const message = ref('')
+const myCars = ref<Car[]>([])
+const carsLoading = ref(false)
+const carsError = ref('')
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Unable to connect. Please try again.'
@@ -21,10 +25,28 @@ async function restore(): Promise<void> {
   error.value = ''
   try {
     user.value = await getCurrentUser()
+    if (user.value) {
+      await loadMyCars()
+    } else {
+      myCars.value = []
+    }
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
     loading.value = false
+  }
+}
+
+async function loadMyCars(): Promise<void> {
+  if (!user.value || carsLoading.value) return
+  carsLoading.value = true
+  carsError.value = ''
+  try {
+    myCars.value = await getMyCars()
+  } catch (cause) {
+    carsError.value = errorMessage(cause)
+  } finally {
+    carsLoading.value = false
   }
 }
 
@@ -49,6 +71,7 @@ async function submit(): Promise<void> {
       await login(email.value, password.value)
       user.value = await getCurrentUser()
       if (!user.value) throw new Error('Your session expired. Please sign in again.')
+      await loadMyCars()
       message.value = 'You are signed in.'
     }
   } catch (cause) {
@@ -67,6 +90,7 @@ async function signOut(): Promise<void> {
   try {
     await logout()
     user.value = null
+    myCars.value = []
     message.value = 'You are signed out.'
   } catch (cause) {
     error.value = errorMessage(cause)
@@ -75,7 +99,18 @@ async function signOut(): Promise<void> {
   }
 }
 
-onMounted(restore)
+function handleCarSubmitted(): void {
+  void loadMyCars()
+}
+
+onMounted(() => {
+  window.addEventListener('world-garage:car-submitted', handleCarSubmitted)
+  void restore()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('world-garage:car-submitted', handleCarSubmitted)
+})
 </script>
 
 <template>
@@ -93,6 +128,31 @@ onMounted(restore)
         <button type="button" :disabled="busy" @click="signOut">
           {{ busy ? 'Signing out…' : 'Sign out' }}
         </button>
+        <div class="my-garage">
+          <div class="my-garage__heading">
+            <h3>My vehicles</h3>
+            <button type="button" class="refresh-cars" :disabled="carsLoading" @click="loadMyCars">
+              {{ carsLoading ? 'Refreshing…' : 'Refresh' }}
+            </button>
+          </div>
+          <p v-if="carsLoading && myCars.length === 0" role="status">Loading your vehicles…</p>
+          <p v-else-if="carsError" class="cars-error" role="alert">{{ carsError }}</p>
+          <p v-else-if="myCars.length === 0">No submissions yet.</p>
+          <ul v-else class="my-car-list">
+            <li v-for="car in myCars" :key="car.id">
+              <div>
+                <strong>{{ car.make }} {{ car.model }}</strong>
+                <span>{{ car.location }}</span>
+              </div>
+              <span
+                class="review-status"
+                :class="`review-status--${car.reviewStatus?.toLowerCase()}`"
+              >
+                {{ car.reviewStatus }}
+              </span>
+            </li>
+          </ul>
+        </div>
       </div>
       <form v-else class="auth-form" @submit.prevent="submit">
         <h3>{{ mode === 'login' ? 'Sign in' : 'Create an account' }}</h3>
@@ -219,6 +279,63 @@ button:disabled {
 .account-hint {
   font-size: 0.85rem;
   margin: 0;
+}
+.my-garage {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #aaa49a;
+}
+.my-garage__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.my-garage__heading h3 {
+  margin: 0;
+}
+.refresh-cars {
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  color: #202322;
+}
+.my-car-list {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  margin: 1rem 0 0;
+  list-style: none;
+  border-top: 1px solid #aaa49a;
+}
+.my-car-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #aaa49a;
+}
+.my-car-list li div,
+.my-car-list li span {
+  display: grid;
+  gap: 0.25rem;
+}
+.review-status {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.review-status--pending {
+  color: #9b5b11;
+}
+.review-status--approved {
+  color: #28643c;
+}
+.cars-error {
+  color: #942727;
 }
 [role='alert'] {
   color: #942727;

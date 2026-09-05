@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CarRepository extends JpaRepository<Car, Long> {
 
   List<Car> findAllByReviewStatus(ReviewStatus reviewStatus);
+  List<Car> findAllByOwnerEmailOrderByIdDesc(String email);
 
   Optional<Car> findByIdAndReviewStatus(
       Long id,

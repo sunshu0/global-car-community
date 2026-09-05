@@ -31,6 +31,11 @@ public class CarController {
     this.userAccountService = userAccountService;
   }
 
+  @GetMapping("/mine")
+  public List<Car> getMyCars(Authentication authentication) {
+    return carService.getCarsByOwnerEmail(authentication.getName());
+  }
+
   @GetMapping
   public List<Car> getCars() {
     return carService.getAllCars();

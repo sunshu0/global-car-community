@@ -89,6 +89,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/cars/mine")
+                    .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/cars/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/cars")

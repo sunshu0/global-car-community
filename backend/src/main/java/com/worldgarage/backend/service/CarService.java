@@ -5,6 +5,7 @@ import com.worldgarage.backend.model.ReviewStatus;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,13 @@ public class CarService {
 
   public Optional<Car> getCarById(long id) {
     return carRepository.findByIdAndReviewStatus(id, ReviewStatus.APPROVED);
+  }
+
+  public List<Car> getCarsByOwnerEmail(String email) {
+    String normalizedEmail =
+        email.toLowerCase(Locale.ROOT).trim();
+
+    return carRepository.findAllByOwnerEmailOrderByIdDesc(normalizedEmail);
   }
 
   public Car createCar(String make, String model, String location) {

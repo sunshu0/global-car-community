@@ -47,6 +47,8 @@ try {
   await page.locator('#car-location').fill('Auckland, New Zealand')
   await page.getByRole('button', { name: 'Submit for review' }).click()
   await page.getByText('Nissan 370Z was submitted for review.').waitFor()
+  await panel.locator('.my-car-list').getByText('Nissan 370Z').waitFor()
+  await panel.locator('.my-car-list').getByText('PENDING').waitFor()
   const cookies = await page.context().cookies()
   const sessionCookie = cookies.find((cookie) => cookie.name === 'JSESSIONID')
   assert.ok(sessionCookie?.httpOnly, 'Session cookie must be HttpOnly')
