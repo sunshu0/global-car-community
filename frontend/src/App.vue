@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import heroImage from './assets/world-garage-hero.jpg'
 import CarCard from './components/CarCard.vue'
+import AuthPanel from './components/AuthPanel.vue'
 
 interface Car {
   id: number
@@ -114,6 +115,7 @@ onMounted(loadCars)
     <nav aria-label="Primary navigation">
       <a href="#garage">The Garage</a>
       <a href="#submit">Submit a car</a>
+      <a href="#account">Your account</a>
     </nav>
 
     <span class="edition-label">Independent motor culture</span>
@@ -277,6 +279,7 @@ onMounted(loadCars)
         </p>
       </form>
     </section>
+    <AuthPanel />
   </main>
 
   <footer class="site-footer">

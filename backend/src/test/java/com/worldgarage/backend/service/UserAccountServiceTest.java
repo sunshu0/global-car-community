@@ -19,6 +19,23 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class UserAccountServiceTest {
+  @Test
+  void findsUserByNormalizedEmail() {
+    UserAccount user = new UserAccount("owner@example.com", "hash", "Owner");
+    when(userAccountRepository.findByEmail("owner@example.com"))
+        .thenReturn(java.util.Optional.of(user));
+    assertSame(user, userAccountService.getUserByEmail(" Owner@Example.com ").orElseThrow());
+    verify(userAccountRepository).findByEmail("owner@example.com");
+  }
+
+  @Test
+  void returnsEmptyWhenUserDoesNotExist() {
+    when(userAccountRepository.findByEmail("missing@example.com"))
+        .thenReturn(java.util.Optional.empty());
+    assertEquals(java.util.Optional.empty(),
+        userAccountService.getUserByEmail("missing@example.com"));
+    verify(userAccountRepository).findByEmail("missing@example.com");
+  }
 
   private UserAccountRepository userAccountRepository;
   private PasswordEncoder passwordEncoder;

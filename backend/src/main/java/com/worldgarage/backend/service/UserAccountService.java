@@ -6,6 +6,7 @@ import com.worldgarage.backend.repository.UserAccountRepository;
 import java.util.Locale;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class UserAccountService {
@@ -30,5 +31,10 @@ public class UserAccountService {
 
     UserAccount user = new UserAccount(normalizedEmail, passwordHash, displayName.trim());
     return userAccountRepository.save(user);
+  }
+
+  public Optional<UserAccount> getUserByEmail(String email) {
+    String normalizedEmail = email.toLowerCase(Locale.ROOT).trim();
+    return userAccountRepository.findByEmail(normalizedEmail);
   }
 }

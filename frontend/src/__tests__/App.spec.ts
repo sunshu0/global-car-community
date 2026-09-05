@@ -3,6 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import App from '../App.vue'
 
+// Account behavior has its own tests; keep car request mocks isolated.
+vi.mock('../components/AuthPanel.vue', () => ({
+  default: { template: '<section id="account"></section>' },
+}))
+
 describe('App', () => {
   beforeEach(() => {
     vi.stubGlobal(
