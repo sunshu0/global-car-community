@@ -6,18 +6,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.ReviewStatus;
+import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.CarRepository;
+import com.worldgarage.backend.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import com.worldgarage.backend.model.UserAccount;
-import com.worldgarage.backend.repository.UserAccountRepository;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -103,6 +104,34 @@ class CarControllerTest {
         .andExpect(jsonPath("$.id").value(2))
         .andExpect(jsonPath("$.make").value("Toyota"))
         .andExpect(jsonPath("$.model").value("Supra"));
+  }
+
+  @Test
+  void returnsSafeOwnerSummaryForApprovedCar() throws Exception {
+    UserAccount owner =
+        userAccountRepository.save(
+            new UserAccount(
+                "public-owner@example.com",
+                "{bcrypt}secret-password-hash",
+                "Public Owner"));
+
+    Car car =
+        new Car(
+            "Nissan",
+            "370Z",
+            "Auckland, New Zealand");
+
+    car.setOwner(owner);
+    car.approve();
+    car = carRepository.save(car);
+
+    mockMvc.perform(get("/api/cars/{id}", car.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.owner.id").value(owner.getId()))
+        .andExpect(jsonPath("$.owner.displayName").value("Public Owner"))
+        .andExpect(jsonPath("$.owner.email").doesNotExist())
+        .andExpect(jsonPath("$.owner.passwordHash").doesNotExist())
+        .andExpect(jsonPath("$.owner.role").doesNotExist());
   }
 
   @Test

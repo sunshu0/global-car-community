@@ -1,5 +1,6 @@
 package com.worldgarage.backend.controller;
 
+import com.worldgarage.backend.dto.CarDetailResponse;
 import com.worldgarage.backend.dto.CreateCarRequest;
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.UserAccount;
@@ -64,11 +65,15 @@ public class CarController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Car> getCarById(@PathVariable long id) {
+  public ResponseEntity<CarDetailResponse> getCarById(
+      @PathVariable long id) {
     Optional<Car> car = carService.getCarById(id);
 
     if (car.isPresent()) {
-      return ResponseEntity.ok(car.get());
+      CarDetailResponse response =
+          CarDetailResponse.from(car.get());
+
+      return ResponseEntity.ok(response);
     }
 
     return ResponseEntity.notFound().build();
