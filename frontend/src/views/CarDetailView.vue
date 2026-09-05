@@ -49,8 +49,16 @@ onMounted(loadCar)
           {{ car.make }} <em>{{ car.model }}</em>
         </h1>
         <p class="detail-location">{{ car.location }}</p>
-        <p class="detail-intro">An approved owner submission from the World Garage community.</p>
+        <p class="detail-intro">
+          An approved submission
+          <template v-if="car.owner">from {{ car.owner.displayName }}</template>
+          <template v-else>from the World Garage archive</template>.
+        </p>
         <dl class="detail-facts">
+          <div>
+            <dt>Owner</dt>
+            <dd>{{ car.owner?.displayName ?? 'Archive entry' }}</dd>
+          </div>
           <div>
             <dt>Make</dt>
             <dd>{{ car.make }}</dd>

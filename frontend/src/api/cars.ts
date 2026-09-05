@@ -1,3 +1,8 @@
+export interface OwnerSummary {
+  id: number
+  displayName: string
+}
+
 export interface Car {
   id: number
   make: string
@@ -5,6 +10,7 @@ export interface Car {
   location: string
   imageUrl: string | null
   reviewStatus?: 'PENDING' | 'APPROVED'
+  owner?: OwnerSummary | null
 }
 
 export async function getCarById(id: number): Promise<Car> {

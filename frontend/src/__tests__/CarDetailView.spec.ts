@@ -21,6 +21,10 @@ describe('CarDetailView', () => {
           location: 'Auckland, New Zealand',
           imageUrl: 'https://example.com/370z.jpg',
           reviewStatus: 'APPROVED',
+          owner: {
+            id: 3,
+            displayName: 'Public Owner',
+          },
         }),
       }),
     )
@@ -34,6 +38,7 @@ describe('CarDetailView', () => {
     expect(fetch).toHaveBeenCalledWith('/api/cars/7')
     expect(wrapper.text()).toContain('Nissan 370Z')
     expect(wrapper.text()).toContain('Auckland, New Zealand')
+    expect(wrapper.text()).toContain('Public Owner')
     expect(wrapper.get('img').attributes('src')).toBe('https://example.com/370z.jpg')
   })
 
