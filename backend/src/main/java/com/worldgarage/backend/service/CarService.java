@@ -2,6 +2,7 @@ package com.worldgarage.backend.service;
 
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.ReviewStatus;
+import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,18 @@ public class CarService {
       String location,
       String imageUrl
   ) {
+    return createCar(make, model, location, imageUrl, null);
+  }
+
+  public Car createCar(
+      String make,
+      String model,
+      String location,
+      String imageUrl,
+      UserAccount owner
+  ) {
     Car car = new Car(make, model, location, imageUrl);
+    car.setOwner(owner);
     return carRepository.save(car);
   }
 

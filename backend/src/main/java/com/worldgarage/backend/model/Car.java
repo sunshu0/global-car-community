@@ -1,12 +1,16 @@
 package com.worldgarage.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -34,6 +38,11 @@ public class Car {
   @Column(nullable = false, length = 20)
   @ColumnDefault("'APPROVED'")
   private ReviewStatus reviewStatus = ReviewStatus.PENDING;
+
+  @JsonIgnore
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "owner_id")
+  private UserAccount owner;
 
   protected Car() {
   }
@@ -84,5 +93,13 @@ public class Car {
 
   public ReviewStatus getReviewStatus() {
     return reviewStatus;
+  }
+
+  public UserAccount getOwner() {
+    return owner;
+  }
+
+  public void setOwner(UserAccount owner) {
+    this.owner = owner;
   }
 }

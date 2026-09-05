@@ -73,9 +73,7 @@ public class SecurityConfig {
             context -> context.securityContextRepository(securityContextRepository))
         .csrf(
             csrf ->
-                csrf.csrfTokenRepository(csrfTokenRepository)
-                    .ignoringRequestMatchers(
-                    "/api/cars"))
+                csrf.csrfTokenRepository(csrfTokenRepository))
         .authorizeHttpRequests(
             authorize ->
                 authorize
@@ -91,8 +89,10 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")
-                    .requestMatchers("/api/cars/**")
+                    .requestMatchers(HttpMethod.GET, "/api/cars/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/cars")
+                    .authenticated()
                     .anyRequest()
                     .denyAll())
         .logout(logout -> logout

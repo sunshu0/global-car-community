@@ -62,7 +62,8 @@ Optional real-browser smoke test:
 ## Remaining boundaries
 
 - No email verification, password reset, rate limiting, or multi-instance session store.
-- Existing anonymous car submissions and their CSRF exception are unchanged.
-  Revisit that exception when binding vehicle submission to a logged-in owner.
+- Vehicle submissions require an authenticated database user and a fresh CSRF
+  token. New cars store that user as owner; public vehicle GET requests remain
+  anonymous. Existing seeded cars are allowed to have no owner.
 - HTTP Basic credentials remain accepted for existing API clients; browser APIs
   intentionally do not send WWW-Authenticate challenges.

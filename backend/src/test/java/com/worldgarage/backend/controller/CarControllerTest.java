@@ -1,6 +1,7 @@
 package com.worldgarage.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,16 +9,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.ReviewStatus;
+import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.CarRepository;
+import com.worldgarage.backend.repository.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class CarControllerTest {
 
   @Autowired
@@ -26,11 +32,23 @@ class CarControllerTest {
   @Autowired
   private CarRepository carRepository;
 
+  @Autowired
+  private UserAccountRepository userAccountRepository;
+
   @Test
+  @WithMockUser(username = "owner@example.com", roles = "USER")
   void createsPendingCarThatIsNotPubliclyVisible() throws Exception {
+    UserAccount owner =
+        userAccountRepository.save(
+            new UserAccount(
+                "owner@example.com",
+                "{bcrypt}test-password-hash",
+                "Garage Owner"));
+
     long carCountBefore = carRepository.count();
 
     mockMvc.perform(post("/api/cars")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content("""
                 {
@@ -45,7 +63,8 @@ class CarControllerTest {
         .andExpect(jsonPath("$.model").value("RX-7"))
         .andExpect(jsonPath("$.location").value("Auckland, New Zealand"))
         .andExpect(jsonPath("$.imageUrl").value("https://example.com/rx7.jpg"))
-        .andExpect(jsonPath("$.reviewStatus").value("PENDING"));
+        .andExpect(jsonPath("$.reviewStatus").value("PENDING"))
+        .andExpect(jsonPath("$.owner").doesNotExist());
     assertEquals(carCountBefore + 1, carRepository.count());
 
     Car pendingCar = carRepository
@@ -55,8 +74,30 @@ class CarControllerTest {
         .findFirst()
         .orElseThrow();
 
+    assertEquals(owner.getId(), pendingCar.getOwner().getId());
+    assertEquals("owner@example.com", pendingCar.getOwner().getEmail());
+
     mockMvc.perform(get("/api/cars/{id}", pendingCar.getId()))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void rejectsAnonymousCarSubmission() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/cars")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "make": "Mazda",
+                      "model": "RX-7",
+                      "location": "Auckland, New Zealand",
+                      "imageUrl": null
+                    }
+                    """))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

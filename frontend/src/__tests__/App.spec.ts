@@ -98,6 +98,11 @@ describe('App', () => {
 
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
+      status: 200,
+      json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'car-token' }),
+    } as Response)
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
       status: 201,
       json: async () => ({
         id: 4,
@@ -119,8 +124,10 @@ describe('App', () => {
 
     expect(fetch).toHaveBeenLastCalledWith('/api/cars', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': 'car-token',
       },
       body: JSON.stringify({
         make: 'Mazda',
@@ -132,5 +139,28 @@ describe('App', () => {
 
     expect(wrapper.get('.car-grid').text()).not.toContain('Mazda RX-7')
     expect(wrapper.text()).toContain('Mazda RX-7 was submitted for review.')
+  })
+
+  it('tells anonymous users to sign in before submitting', async () => {
+    const wrapper = mount(App)
+    await flushPromises()
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'car-token' }),
+      } as Response)
+      .mockResolvedValueOnce({ ok: false, status: 401 } as Response)
+
+    await wrapper.get('#car-make').setValue('Nissan')
+    await wrapper.get('#car-model').setValue('370Z')
+    await wrapper.get('#car-location').setValue('Auckland, New Zealand')
+    await wrapper.get('form.car-form').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.get('[role="alert"]').text()).toContain(
+      'Please sign in before submitting a car.',
+    )
   })
 })

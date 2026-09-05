@@ -1,6 +1,7 @@
 package com.worldgarage.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.ReviewStatus;
+import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.CarRepository;
 import java.util.List;
 import java.util.Optional;
@@ -142,5 +144,38 @@ class CarServiceTest {
     assertTrue(result.isEmpty());
     verify(carRepository).findById(99L);
     verify(carRepository, never()).save(any(Car.class));
+  }
+
+  @Test
+  void createsCarWithOwner() {
+    // Arrange
+    UserAccount owner =
+        new UserAccount(
+            "owner@example.com",
+            "{bcrypt}password-hash",
+            "Garage Owner");
+
+    when(carRepository.save(any(Car.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    // Act
+    Car createdCar =
+        carService.createCar(
+            "Nissan",
+            "370Z",
+            "Auckland, New Zealand",
+            "https://example.com/370z.jpg",
+            owner);
+
+    // Assert
+    assertSame(owner, createdCar.getOwner());
+
+    ArgumentCaptor<Car> carCaptor =
+        ArgumentCaptor.forClass(Car.class);
+
+    verify(carRepository).save(carCaptor.capture());
+
+    Car carPassedToRepository = carCaptor.getValue();
+    assertSame(owner, carPassedToRepository.getOwner());
   }
 }

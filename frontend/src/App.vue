@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import heroImage from './assets/world-garage-hero.jpg'
 import CarCard from './components/CarCard.vue'
 import AuthPanel from './components/AuthPanel.vue'
+import { postWithCsrf } from './api/auth'
 
 interface Car {
   id: number
@@ -74,17 +75,7 @@ async function submitCar(): Promise<void> {
   statusMessage.value = ''
 
   try {
-    const response = await fetch('/api/cars', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(car),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`)
-    }
+    const response = await postWithCsrf('/api/cars', car)
 
     const createdCar: Car = await response.json()
 
