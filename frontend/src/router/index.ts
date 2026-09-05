@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import GarageView from '../views/GarageView.vue'
 import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
@@ -6,7 +7,7 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
   routes: [
     { path: '/', name: 'home', component: HomeView },
-    { path: '/garage', name: 'garage', component: () => import('../views/GarageView.vue') },
+    { path: '/garage', name: 'garage', component: GarageView },
     { path: '/submit', name: 'submit', component: () => import('../views/SubmitView.vue') },
     { path: '/account', name: 'account', component: () => import('../views/AccountView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },

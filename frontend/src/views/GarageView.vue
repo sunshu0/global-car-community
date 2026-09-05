@@ -38,7 +38,7 @@ onMounted(loadCars)
 </script>
 
 <template>
-  <section class="garage-section" aria-labelledby="garage-title">
+  <section id="garage" class="garage-section" aria-labelledby="garage-title">
     <div class="section-heading">
       <div>
         <p class="eyebrow eyebrow--dark">The public garage</p>

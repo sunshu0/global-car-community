@@ -47,7 +47,8 @@ describe('World Garage pages', () => {
 
     expect(wrapper.get('.wordmark').text()).toBe('WORLDGARAGE')
     expect(wrapper.text()).toContain('Discover real cars from around the world')
-    expect(wrapper.get('.hero-actions a').attributes('href')).toBe('/garage')
+    expect(wrapper.get('.hero-actions a').attributes('href')).toBe('#garage')
+    expect(wrapper.text()).toContain('Cars worth a closer look.')
   })
 
   it('loads cars from the backend endpoint', async () => {

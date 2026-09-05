@@ -76,7 +76,7 @@ a {
   flex-direction: column;
   width: max-content;
   color: #f3f0e8;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 900;
   letter-spacing: 0.16em;
   line-height: 0.95;
@@ -161,6 +161,33 @@ h1 {
   font-size: clamp(3.3rem, 6vw, 7.4rem);
   letter-spacing: -0.065em;
   line-height: 0.88;
+}
+
+.publication-title {
+  margin-bottom: 28px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(4.4rem, 7.4vw, 8.4rem);
+  font-weight: 950;
+  letter-spacing: -0.09em;
+  line-height: 0.72;
+  text-transform: uppercase;
+}
+
+.publication-title span {
+  display: block;
+}
+
+.publication-title span:last-child {
+  color: #d83a2e;
+}
+
+.hero-headline {
+  margin-bottom: 24px;
+  color: #f3f0e8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.65rem, 2.7vw, 3.2rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
 }
 
 .hero-intro {
@@ -630,6 +657,10 @@ h1 {
 
   h1 {
     font-size: clamp(3.4rem, 14vw, 5.7rem);
+  }
+
+  .publication-title {
+    font-size: clamp(4.5rem, 19vw, 7.2rem);
   }
 
   .issue-note {
