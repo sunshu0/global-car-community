@@ -223,4 +223,25 @@ class CarServiceTest {
             3L,
             ReviewStatus.APPROVED);
   }
+
+  @Test
+  void returnsPendingCars() {
+    List<Car> pendingCars =
+        List.of(
+            new Car(
+                10L,
+                "Mazda",
+                "RX-7",
+                "Hiroshima, Japan"));
+
+    when(carRepository.findAllByReviewStatus(ReviewStatus.PENDING))
+        .thenReturn(pendingCars);
+
+    List<Car> result = carService.getPendingCars();
+
+    assertSame(pendingCars, result);
+
+    verify(carRepository)
+        .findAllByReviewStatus(ReviewStatus.PENDING);
+  }
 }

@@ -22,6 +22,10 @@ public class CarService {
     return carRepository.findAllByReviewStatus(ReviewStatus.APPROVED);
   }
 
+  public List<Car> getPendingCars() {
+    return carRepository.findAllByReviewStatus(ReviewStatus.PENDING);
+  }
+
   public Optional<Car> getCarById(long id) {
     return carRepository.findByIdAndReviewStatus(id, ReviewStatus.APPROVED);
   }

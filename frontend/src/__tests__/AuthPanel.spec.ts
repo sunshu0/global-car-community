@@ -169,4 +169,26 @@ describe('account authentication', () => {
     expect(wrapper.get('.my-car-list').text()).toContain('Nissan 370Z')
     expect(wrapper.get('.my-car-list').text()).toContain('APPROVED')
   })
+
+  it('shows a distinct review console instead of a personal garage for administrators', async () => {
+    setup(
+      response(200, {
+        id: 34,
+        email: 'admin@example.com',
+        displayName: 'World Garage Admin',
+        role: 'ADMIN',
+      }),
+      [],
+    )
+
+    const wrapper = mount(AuthPanel, {
+      global: { stubs: { RouterLink: true } },
+    })
+    await flushPromises()
+
+    expect(wrapper.classes()).toContain('account-panel--admin')
+    expect(wrapper.text()).toContain('Administrator access')
+    expect(wrapper.text()).toContain('Vehicle review queue')
+    expect(wrapper.text()).not.toContain('My vehicles')
+  })
 })

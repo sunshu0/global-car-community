@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { getCurrentUser, login, logout, register, type CurrentUser } from '../api/auth'
 import { getMyCars, type Car } from '../api/cars'
 
@@ -25,7 +26,7 @@ async function restore(): Promise<void> {
   error.value = ''
   try {
     user.value = await getCurrentUser()
-    if (user.value) {
+    if (user.value?.role === 'USER') {
       await loadMyCars()
     } else {
       myCars.value = []
@@ -71,7 +72,9 @@ async function submit(): Promise<void> {
       await login(email.value, password.value)
       user.value = await getCurrentUser()
       if (!user.value) throw new Error('Your session expired. Please sign in again.')
-      await loadMyCars()
+      if (user.value.role === 'USER') {
+        await loadMyCars()
+      }
       message.value = 'You are signed in.'
     }
   } catch (cause) {
@@ -114,21 +117,67 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section id="account" class="account-panel" aria-labelledby="account-title">
-    <div>
-      <p class="account-kicker">The people behind the machines</p>
-      <h2 id="account-title">Your World Garage.</h2>
-      <p>One account. Your place in the garage.</p>
+  <section
+    id="account"
+    class="account-panel"
+    :class="{ 'account-panel--admin': user?.role === 'ADMIN' }"
+    aria-labelledby="account-title"
+  >
+    <div class="account-intro">
+      <template v-if="user?.role === 'ADMIN'">
+        <p class="account-kicker">World Garage · Control desk</p>
+        <p class="admin-clearance">Administrator access</p>
+        <h2 id="account-title">Review. Decide. Publish.</h2>
+        <p>Keep the public garage considered, credible, and worth exploring.</p>
+      </template>
+      <template v-else>
+        <p class="account-kicker">The people behind the machines</p>
+        <h2 id="account-title">Your World Garage.</h2>
+        <p>One account. Your place in the garage.</p>
+      </template>
     </div>
     <div class="account-content" :aria-busy="loading || busy">
       <p v-if="loading" role="status">Checking your session…</p>
       <div v-else-if="user">
-        <h3>Welcome, {{ user.displayName }}</h3>
-        <p>{{ user.email }}</p>
-        <button type="button" :disabled="busy" @click="signOut">
+        <div :class="{ 'admin-identity': user.role === 'ADMIN' }">
+          <div>
+            <p v-if="user.role === 'ADMIN'" class="signed-in-label">Signed in as</p>
+            <h3>
+              {{ user.role === 'ADMIN' ? user.displayName : `Welcome, ${user.displayName}` }}
+            </h3>
+            <p class="account-email">{{ user.email }}</p>
+          </div>
+          <button
+            v-if="user.role === 'ADMIN'"
+            class="sign-out-button"
+            type="button"
+            :disabled="busy"
+            @click="signOut"
+          >
+            {{ busy ? 'Signing out…' : 'Sign out' }}
+          </button>
+        </div>
+
+        <div v-if="user.role === 'ADMIN'" class="admin-console">
+          <p>Moderation operations</p>
+          <h3>Vehicle review queue</h3>
+          <span>Inspect pending submissions before they appear in the public collection.</span>
+          <RouterLink class="admin-link" to="/admin">
+            Enter review desk →
+          </RouterLink>
+        </div>
+
+        <button
+          v-if="user.role !== 'ADMIN'"
+          class="sign-out-button"
+          type="button"
+          :disabled="busy"
+          @click="signOut"
+        >
           {{ busy ? 'Signing out…' : 'Sign out' }}
         </button>
-        <div class="my-garage">
+
+        <div v-if="user.role !== 'ADMIN'" class="my-garage">
           <div class="my-garage__heading">
             <h3>My vehicles</h3>
             <button type="button" class="refresh-cars" :disabled="carsLoading" @click="loadMyCars">
@@ -225,6 +274,53 @@ onBeforeUnmount(() => {
   color: #202322;
   border-top: 3px solid #202322;
 }
+
+.account-panel--admin {
+  grid-template-columns: minmax(340px, 0.9fr) minmax(460px, 1.1fr);
+  gap: clamp(50px, 7vw, 110px);
+  align-items: center;
+  min-height: calc(100vh - 152px);
+  max-width: 1500px;
+  padding: clamp(42px, 5vw, 78px);
+  border-top: 5px solid #d83a2e;
+  background: #111;
+  color: #f0ede5;
+}
+
+.account-panel--admin .account-content {
+  padding-left: clamp(36px, 5vw, 78px);
+  border-left: 1px solid #333;
+}
+
+.account-panel--admin .account-kicker,
+.admin-clearance {
+  color: #d83a2e;
+}
+
+.admin-clearance {
+  display: inline-block;
+  margin: 1.5rem 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid currentColor;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.account-panel--admin h2 {
+  max-width: 620px;
+  font-size: clamp(3.2rem, 5.2vw, 6.2rem);
+  letter-spacing: -0.06em;
+  line-height: 0.88;
+}
+
+.account-panel--admin .account-intro > p:last-child {
+  max-width: 500px;
+  color: #908c84;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.65;
+}
 .account-kicker {
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -237,6 +333,34 @@ h2 {
 }
 h3 {
   margin-top: 0;
+}
+
+.signed-in-label {
+  margin-bottom: 0.45rem;
+  color: #77736b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.account-email {
+  color: #77736b;
+}
+
+.admin-identity {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.admin-identity h3 {
+  margin-bottom: 0.55rem;
+}
+
+.admin-identity .account-email {
+  margin-bottom: 0;
 }
 .account-content {
   min-width: 0;
@@ -275,6 +399,62 @@ button:disabled {
 .account-switch {
   background: transparent;
   color: #202322;
+}
+.admin-console {
+  margin: 2.5rem 0 0;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid #383838;
+  background: #1a1a1a;
+}
+
+.admin-console > p {
+  margin-bottom: 1.2rem;
+  color: #d83a2e;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.admin-console h3 {
+  margin-bottom: 0.7rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 3.4vw, 3.8rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.admin-console span {
+  display: block;
+  max-width: 520px;
+  color: #969188;
+  line-height: 1.6;
+}
+
+.admin-link {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  margin-top: 1.8rem;
+  padding: 0 1.2rem;
+  background: #d83a2e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.sign-out-button {
+  background: transparent;
+  color: inherit;
+}
+
+.account-panel--admin .sign-out-button {
+  flex: 0 0 auto;
+  border-color: #4b4944;
+  color: #aaa69d;
 }
 .account-hint {
   font-size: 0.85rem;
@@ -346,6 +526,28 @@ button:disabled {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     padding: 1.5rem;
+  }
+
+  .account-panel--admin {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .account-panel--admin .account-content {
+    padding-top: 2rem;
+    padding-left: 0;
+    border-top: 1px solid #333;
+    border-left: 0;
+  }
+
+  .admin-identity {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .admin-identity .sign-out-button {
+    align-self: flex-start;
   }
 }
 </style>

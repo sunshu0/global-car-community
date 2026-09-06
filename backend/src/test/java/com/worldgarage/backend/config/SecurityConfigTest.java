@@ -35,8 +35,8 @@ class SecurityConfigTest {
 
   @Test
   @WithMockUser(roles = "ADMIN")
-  void adminUsersPassSecurityChecks() throws Exception {
-    mockMvc.perform(get("/api/admin/cars")).andExpect(status().isNotFound());
+  void adminUsersCanReadReviewQueue() throws Exception {
+    mockMvc.perform(get("/api/admin/cars")).andExpect(status().isOk());
   }
 
   @Test

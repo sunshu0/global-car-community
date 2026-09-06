@@ -29,18 +29,26 @@ async function check(response: Response, path: string): Promise<void> {
 }
 
 // Fetch a fresh token for each write; login and logout rotate the CSRF secret.
-export async function postWithCsrf(path: string, body?: object): Promise<Response> {
+export async function requestWithCsrf(
+  path: string,
+  method: 'POST' | 'PATCH',
+  body?: object,
+): Promise<Response> {
   const tokenResponse = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
   await check(tokenResponse, '/api/auth/csrf')
   const csrf: CsrfToken = await tokenResponse.json()
   const response = await fetch(path, {
-    method: 'POST',
+    method,
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token },
     ...(body ? { body: JSON.stringify(body) } : {}),
   })
   await check(response, path)
   return response
+}
+
+export async function postWithCsrf(path: string, body?: object): Promise<Response> {
+  return requestWithCsrf(path, 'POST', body)
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {

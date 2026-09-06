@@ -2,8 +2,10 @@ package com.worldgarage.backend.controller;
 
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.service.CarService;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,11 @@ public class AdminCarController {
 
   public AdminCarController(CarService carService) {
     this.carService = carService;
+  }
+
+  @GetMapping
+  public List<Car> getPendingCars() {
+    return carService.getPendingCars();
   }
 
   @PatchMapping("/{id}/approve")

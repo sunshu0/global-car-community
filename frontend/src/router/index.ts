@@ -22,6 +22,11 @@ const router = createRouter({
     },
     { path: '/submit', name: 'submit', component: () => import('../views/SubmitView.vue') },
     { path: '/account', name: 'account', component: () => import('../views/AccountView.vue') },
+    {
+      path: '/admin',
+      name: 'admin-review',
+      component: () => import('../views/AdminReviewView.vue'),
+    },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })
