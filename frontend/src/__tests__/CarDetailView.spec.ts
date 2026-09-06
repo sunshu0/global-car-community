@@ -40,6 +40,8 @@ describe('CarDetailView', () => {
     expect(wrapper.text()).toContain('Auckland, New Zealand')
     expect(wrapper.text()).toContain('Public Owner')
     expect(wrapper.get('img').attributes('src')).toBe('https://example.com/370z.jpg')
+    expect(wrapper.findAllComponents(RouterLinkStub).some((link) => link.props('to') === '/users/3'))
+      .toBe(true)
   })
 
   it('shows an unavailable state when the backend returns 404', async () => {

@@ -196,4 +196,31 @@ class CarServiceTest {
     verify(carRepository)
         .findAllByOwnerEmailOrderByIdDesc("owner@example.com");
   }
+
+  @Test
+  void returnsApprovedCarsForOwnerId() {
+    List<Car> approvedCars =
+        List.of(
+            new Car(
+                8L,
+                "Nissan",
+                "370Z",
+                "Auckland, New Zealand"));
+
+    when(
+        carRepository.findAllByOwnerIdAndReviewStatusOrderByIdDesc(
+            3L,
+            ReviewStatus.APPROVED))
+        .thenReturn(approvedCars);
+
+    List<Car> result =
+        carService.getApprovedCarsByOwnerId(3L);
+
+    assertSame(approvedCars, result);
+
+    verify(carRepository)
+        .findAllByOwnerIdAndReviewStatusOrderByIdDesc(
+            3L,
+            ReviewStatus.APPROVED);
+  }
 }

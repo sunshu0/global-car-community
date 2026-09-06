@@ -57,7 +57,12 @@ onMounted(loadCar)
         <dl class="detail-facts">
           <div>
             <dt>Owner</dt>
-            <dd>{{ car.owner?.displayName ?? 'Archive entry' }}</dd>
+            <dd>
+              <RouterLink v-if="car.owner" class="owner-link" :to="`/users/${car.owner.id}`">
+                {{ car.owner.displayName }} →
+              </RouterLink>
+              <template v-else>Archive entry</template>
+            </dd>
           </div>
           <div>
             <dt>Make</dt>
@@ -172,6 +177,13 @@ onMounted(loadCar)
 
 .detail-facts dd {
   margin: 0;
+}
+
+.owner-link {
+  color: #8f2b23;
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
 }
 
 .detail-visual {

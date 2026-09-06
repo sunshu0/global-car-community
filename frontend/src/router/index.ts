@@ -14,6 +14,12 @@ const router = createRouter({
       component: () => import('../views/CarDetailView.vue'),
       props: true,
     },
+    {
+      path: '/users/:id',
+      name: 'public-user',
+      component: () => import('../views/PublicUserView.vue'),
+      props: true,
+    },
     { path: '/submit', name: 'submit', component: () => import('../views/SubmitView.vue') },
     { path: '/account', name: 'account', component: () => import('../views/AccountView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },

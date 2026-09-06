@@ -26,6 +26,13 @@ public class CarService {
     return carRepository.findByIdAndReviewStatus(id, ReviewStatus.APPROVED);
   }
 
+  public List<Car> getApprovedCarsByOwnerId(long ownerId) {
+    return carRepository
+        .findAllByOwnerIdAndReviewStatusOrderByIdDesc(
+            ownerId,
+            ReviewStatus.APPROVED);
+  }
+
   public List<Car> getCarsByOwnerEmail(String email) {
     String normalizedEmail =
         email.toLowerCase(Locale.ROOT).trim();

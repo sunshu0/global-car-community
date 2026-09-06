@@ -1,28 +1,27 @@
 package com.worldgarage.backend.config;
 
 import jakarta.servlet.DispatcherType;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import java.util.List;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.web.AuthenticationEntryPoint;
-
 
 @Configuration
 public class SecurityConfig {
@@ -33,19 +32,18 @@ public class SecurityConfig {
   }
 
   @Bean
-  CsrfTokenRepository csrfTokenRepository(){
+  CsrfTokenRepository csrfTokenRepository() {
     return new HttpSessionCsrfTokenRepository();
   }
 
   @Bean
   SessionAuthenticationStrategy sessionAuthenticationStrategy(
-    CsrfTokenRepository csrfTokenRepository){
-      return new CompositeSessionAuthenticationStrategy(
+      CsrfTokenRepository csrfTokenRepository) {
+    return new CompositeSessionAuthenticationStrategy(
         List.of(
-          new ChangeSessionIdAuthenticationStrategy(),
-          new CsrfAuthenticationStrategy(csrfTokenRepository)));
-    }
-
+            new ChangeSessionIdAuthenticationStrategy(),
+            new CsrfAuthenticationStrategy(csrfTokenRepository)));
+  }
 
   @Bean
   AuthenticationManager authenticationManager(
@@ -62,7 +60,9 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(
-      HttpSecurity http, SecurityContextRepository securityContextRepository,CsrfTokenRepository csrfTokenRepository)
+      HttpSecurity http,
+      SecurityContextRepository securityContextRepository,
+      CsrfTokenRepository csrfTokenRepository)
       throws Exception {
     // An API 401 must not open the browser's native HTTP Basic login dialog.
     AuthenticationEntryPoint unauthorized =
@@ -92,6 +92,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/cars/mine")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/cars/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/users/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/cars")
                     .authenticated()

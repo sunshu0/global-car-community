@@ -10,6 +10,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
   List<Car> findAllByReviewStatus(ReviewStatus reviewStatus);
   List<Car> findAllByOwnerEmailOrderByIdDesc(String email);
+  List<Car> findAllByOwnerIdAndReviewStatusOrderByIdDesc(
+      Long ownerId,
+      ReviewStatus reviewStatus);
 
   Optional<Car> findByIdAndReviewStatus(
       Long id,

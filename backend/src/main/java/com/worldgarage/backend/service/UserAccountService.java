@@ -4,9 +4,9 @@ import com.worldgarage.backend.exception.EmailAlreadyRegisteredException;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.repository.UserAccountRepository;
 import java.util.Locale;
+import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 @Service
 public class UserAccountService {
@@ -36,5 +36,9 @@ public class UserAccountService {
   public Optional<UserAccount> getUserByEmail(String email) {
     String normalizedEmail = email.toLowerCase(Locale.ROOT).trim();
     return userAccountRepository.findByEmail(normalizedEmail);
+  }
+
+  public Optional<UserAccount> getUserById(long id) {
+    return userAccountRepository.findById(id);
   }
 }

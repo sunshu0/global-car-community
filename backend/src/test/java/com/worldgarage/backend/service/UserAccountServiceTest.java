@@ -37,6 +37,38 @@ class UserAccountServiceTest {
     verify(userAccountRepository).findByEmail("missing@example.com");
   }
 
+  @Test
+  void findsUserById() {
+    UserAccount user =
+        new UserAccount(
+            "owner@example.com",
+            "password-hash",
+            "Garage Owner");
+
+    when(userAccountRepository.findById(3L))
+        .thenReturn(java.util.Optional.of(user));
+
+    UserAccount result =
+        userAccountService.getUserById(3L).orElseThrow();
+
+    assertSame(user, result);
+
+    verify(userAccountRepository).findById(3L);
+  }
+
+  @Test
+  void returnsEmptyWhenUserIdDoesNotExist() {
+    when(userAccountRepository.findById(99L))
+        .thenReturn(java.util.Optional.empty());
+
+    java.util.Optional<UserAccount> result =
+        userAccountService.getUserById(99L);
+
+    assertEquals(java.util.Optional.empty(), result);
+
+    verify(userAccountRepository).findById(99L);
+  }
+
   private UserAccountRepository userAccountRepository;
   private PasswordEncoder passwordEncoder;
   private UserAccountService userAccountService;
