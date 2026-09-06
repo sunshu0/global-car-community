@@ -13,6 +13,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
   List<Car> findAllByOwnerIdAndReviewStatusOrderByIdDesc(
       Long ownerId,
       ReviewStatus reviewStatus);
+  boolean existsByImageUrlAndReviewStatus(
+      String imageUrl,
+      ReviewStatus reviewStatus);
 
   Optional<Car> findByIdAndReviewStatus(
       Long id,

@@ -2,24 +2,38 @@
 import { ref } from 'vue'
 import { postWithCsrf } from '../api/auth'
 import type { Car } from '../api/cars'
+import { uploadImage } from '../api/uploads'
 
 const newMake = ref('')
 const newModel = ref('')
 const newLocation = ref('')
-const newImageUrl = ref('')
+const selectedImage = ref<File | null>(null)
+const imageInput = ref<HTMLInputElement | null>(null)
 const isSubmitting = ref(false)
 const submitError = ref('')
 const statusMessage = ref('')
 
-async function submitCar(): Promise<void> {
-  const car = {
-    make: newMake.value.trim(),
-    model: newModel.value.trim(),
-    location: newLocation.value.trim(),
-    imageUrl: newImageUrl.value.trim() || null,
+function selectImage(event: Event): void {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+
+  if (file && file.size > 5 * 1024 * 1024) {
+    selectedImage.value = null
+    input.value = ''
+    submitError.value = 'Please choose an image smaller than 5 MB.'
+    return
   }
 
-  if (!car.make || !car.model || !car.location) {
+  selectedImage.value = file
+  submitError.value = ''
+}
+
+async function submitCar(): Promise<void> {
+  const make = newMake.value.trim()
+  const model = newModel.value.trim()
+  const location = newLocation.value.trim()
+
+  if (!make || !model || !location) {
     submitError.value = 'Please complete all fields.'
     return
   }
@@ -29,6 +43,15 @@ async function submitCar(): Promise<void> {
   statusMessage.value = ''
 
   try {
+    const imageUrl = selectedImage.value
+      ? await uploadImage(selectedImage.value)
+      : null
+    const car = {
+      make,
+      model,
+      location,
+      imageUrl,
+    }
     const response = await postWithCsrf('/api/cars', car)
     const createdCar: Car = await response.json()
     window.dispatchEvent(new Event('world-garage:car-submitted'))
@@ -36,7 +59,10 @@ async function submitCar(): Promise<void> {
     newMake.value = ''
     newModel.value = ''
     newLocation.value = ''
-    newImageUrl.value = ''
+    selectedImage.value = null
+    if (imageInput.value) {
+      imageInput.value.value = ''
+    }
     statusMessage.value = `${createdCar.make} ${createdCar.model} was submitted for review.`
   } catch (error) {
     submitError.value = error instanceof Error ? error.message : 'Unable to add car.'
@@ -81,13 +107,15 @@ async function submitCar(): Promise<void> {
         />
       </div>
       <div class="form-field">
-        <label for="car-image-url">Image URL <span>Optional</span></label>
+        <label for="car-image">Photo <span>Optional · JPEG, PNG or WebP · max 5 MB</span></label>
         <input
-          id="car-image-url"
-          v-model="newImageUrl"
-          type="url"
-          placeholder="https://example.com/car.jpg"
+          id="car-image"
+          ref="imageInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          @change="selectImage"
         />
+        <p v-if="selectedImage" class="selected-file">{{ selectedImage.name }}</p>
       </div>
       <div class="form-footer">
         <button type="submit" :disabled="isSubmitting">

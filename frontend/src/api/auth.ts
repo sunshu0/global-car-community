@@ -5,7 +5,7 @@ export interface CurrentUser {
   role: 'USER' | 'ADMIN'
 }
 
-interface CsrfToken {
+export interface CsrfToken {
   headerName: string
   token: string
 }
@@ -29,14 +29,18 @@ async function check(response: Response, path: string): Promise<void> {
 }
 
 // Fetch a fresh token for each write; login and logout rotate the CSRF secret.
+export async function getCsrfToken(): Promise<CsrfToken> {
+  const tokenResponse = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
+  await check(tokenResponse, '/api/auth/csrf')
+  return tokenResponse.json()
+}
+
 export async function requestWithCsrf(
   path: string,
   method: 'POST' | 'PATCH',
   body?: object,
 ): Promise<Response> {
-  const tokenResponse = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
-  await check(tokenResponse, '/api/auth/csrf')
-  const csrf: CsrfToken = await tokenResponse.json()
+  const csrf = await getCsrfToken()
   const response = await fetch(path, {
     method,
     credentials: 'same-origin',

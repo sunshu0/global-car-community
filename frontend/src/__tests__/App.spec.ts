@@ -100,7 +100,18 @@ describe('World Garage pages', () => {
 
   it('submits a new car for review', async () => {
     const wrapper = mount(SubmitView)
+    const image = new File(['mazda-image'], 'mazda-rx7.jpg', { type: 'image/jpeg' })
     vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'car-token' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ imageUrl: '/api/images/12345678-1234-1234-1234-123456789abc' }),
+      } as Response)
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -114,7 +125,7 @@ describe('World Garage pages', () => {
           make: 'Mazda',
           model: 'RX-7',
           location: 'Hiroshima, Japan',
-          imageUrl: 'https://example.com/mazda-rx7.jpg',
+          imageUrl: '/api/images/12345678-1234-1234-1234-123456789abc',
           reviewStatus: 'PENDING',
         }),
       } as Response)
@@ -122,10 +133,22 @@ describe('World Garage pages', () => {
     await wrapper.get('#car-make').setValue('Mazda')
     await wrapper.get('#car-model').setValue('RX-7')
     await wrapper.get('#car-location').setValue('Hiroshima, Japan')
-    await wrapper.get('#car-image-url').setValue('https://example.com/mazda-rx7.jpg')
+    const imageInput = wrapper.get('#car-image')
+    Object.defineProperty(imageInput.element, 'files', { value: [image] })
+    await imageInput.trigger('change')
     await wrapper.get('form.car-form').trigger('submit')
     await flushPromises()
 
+    const uploadOptions = vi.mocked(fetch).mock.calls[1]?.[1]
+    expect(fetch).toHaveBeenNthCalledWith(2, '/api/uploads', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRF-TOKEN': 'car-token',
+      },
+      body: expect.any(FormData),
+    })
+    expect((uploadOptions?.body as FormData).get('image')).toBe(image)
     expect(fetch).toHaveBeenLastCalledWith('/api/cars', {
       method: 'POST',
       credentials: 'same-origin',
@@ -137,7 +160,7 @@ describe('World Garage pages', () => {
         make: 'Mazda',
         model: 'RX-7',
         location: 'Hiroshima, Japan',
-        imageUrl: 'https://example.com/mazda-rx7.jpg',
+        imageUrl: '/api/images/12345678-1234-1234-1234-123456789abc',
       }),
     })
     expect(wrapper.text()).toContain('Mazda RX-7 was submitted for review.')

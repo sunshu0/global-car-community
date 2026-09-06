@@ -5,6 +5,7 @@ import com.worldgarage.backend.dto.CreateCarRequest;
 import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.service.CarService;
+import com.worldgarage.backend.service.ImageAssetService;
 import com.worldgarage.backend.service.UserAccountService;
 import java.util.List;
 import java.util.Optional;
@@ -17,18 +18,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/cars")
 public class CarController {
 
   private final CarService carService;
+  private final ImageAssetService imageAssetService;
   private final UserAccountService userAccountService;
 
   public CarController(
       CarService carService,
+      ImageAssetService imageAssetService,
       UserAccountService userAccountService) {
     this.carService = carService;
+    this.imageAssetService = imageAssetService;
     this.userAccountService = userAccountService;
   }
 
@@ -50,6 +55,12 @@ public class CarController {
         userAccountService
             .getUserByEmail(authentication.getName())
             .orElseThrow();
+
+    if (!imageAssetService.canUseImage(request.imageUrl(), owner)) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Uploaded image does not belong to this user.");
+    }
 
     Car createdCar =
         carService.createCar(
