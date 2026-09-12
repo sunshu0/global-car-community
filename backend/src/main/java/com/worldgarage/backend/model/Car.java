@@ -71,6 +71,10 @@ public class Car {
     reviewStatus = ReviewStatus.APPROVED;
   }
 
+  public void reject() {
+    reviewStatus = ReviewStatus.REJECTED;
+  }
+
   public Long getId() {
     return id;
   }

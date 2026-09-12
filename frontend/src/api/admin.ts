@@ -29,3 +29,12 @@ export async function approveCar(id: number): Promise<Car> {
 
   return response.json()
 }
+
+export async function rejectCar(id: number): Promise<Car> {
+  const response = await requestWithCsrf(
+    `/api/admin/cars/${id}/reject`,
+    'PATCH',
+  )
+
+  return response.json()
+}

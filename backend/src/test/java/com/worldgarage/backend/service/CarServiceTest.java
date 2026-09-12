@@ -147,6 +147,42 @@ class CarServiceTest {
   }
 
   @Test
+  void rejectsCarWhenIdExists() {
+    Car pendingCar =
+        new Car(
+            5L,
+            "Nissan",
+            "Silvia",
+            "Tokyo, Japan");
+
+    when(carRepository.findById(5L))
+        .thenReturn(Optional.of(pendingCar));
+    when(carRepository.save(pendingCar))
+        .thenReturn(pendingCar);
+
+    Car rejectedCar =
+        carService.rejectCar(5L).orElseThrow();
+
+    assertEquals(
+        ReviewStatus.REJECTED,
+        rejectedCar.getReviewStatus());
+    verify(carRepository).findById(5L);
+    verify(carRepository).save(pendingCar);
+  }
+
+  @Test
+  void returnsEmptyWhenRejectingMissingCar() {
+    when(carRepository.findById(99L))
+        .thenReturn(Optional.empty());
+
+    Optional<Car> result = carService.rejectCar(99L);
+
+    assertTrue(result.isEmpty());
+    verify(carRepository).findById(99L);
+    verify(carRepository, never()).save(any(Car.class));
+  }
+
+  @Test
   void createsCarWithOwner() {
     // Arrange
     UserAccount owner =

@@ -39,6 +39,31 @@ class AdminCarControllerTest {
 
   @Test
   @WithMockUser(roles = "ADMIN")
+  void adminRejectsPendingCar() throws Exception {
+    Car pendingCar =
+        carRepository.save(
+            new Car(
+                "Mazda",
+                "RX-8",
+                "Hiroshima, Japan"));
+
+    mockMvc
+        .perform(
+            patch(
+                "/api/admin/cars/{id}/reject",
+                pendingCar.getId())
+                .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(pendingCar.getId()))
+        .andExpect(jsonPath("$.reviewStatus").value("REJECTED"));
+
+    mockMvc
+        .perform(get("/api/cars/{id}", pendingCar.getId()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
   void returnsOnlyPendingCars() throws Exception {
     Car pendingCar =
         carRepository.save(

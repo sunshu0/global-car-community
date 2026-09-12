@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { approveCar, getPendingCars } from '../api/admin'
+import { approveCar, getPendingCars, rejectCar } from '../api/admin'
 import { getCurrentUser } from '../api/auth'
 import type { Car } from '../api/cars'
 
 const cars = ref<Car[]>([])
 const isLoading = ref(true)
-const approvingId = ref<number | null>(null)
+const reviewingId = ref<number | null>(null)
+const reviewAction = ref<'approve' | 'reject' | null>(null)
 const error = ref('')
 const message = ref('')
 
@@ -39,9 +40,10 @@ async function loadQueue(): Promise<void> {
 }
 
 async function approve(id: number): Promise<void> {
-  if (approvingId.value !== null) return
+  if (reviewingId.value !== null) return
 
-  approvingId.value = id
+  reviewingId.value = id
+  reviewAction.value = 'approve'
   error.value = ''
   message.value = ''
 
@@ -52,7 +54,28 @@ async function approve(id: number): Promise<void> {
   } catch (cause) {
     error.value = errorMessage(cause)
   } finally {
-    approvingId.value = null
+    reviewingId.value = null
+    reviewAction.value = null
+  }
+}
+
+async function reject(id: number): Promise<void> {
+  if (reviewingId.value !== null) return
+
+  reviewingId.value = id
+  reviewAction.value = 'reject'
+  error.value = ''
+  message.value = ''
+
+  try {
+    const rejected = await rejectCar(id)
+    cars.value = cars.value.filter((car) => car.id !== id)
+    message.value = `${rejected.make} ${rejected.model} was rejected.`
+  } catch (cause) {
+    error.value = errorMessage(cause)
+  } finally {
+    reviewingId.value = null
+    reviewAction.value = null
   }
 }
 
@@ -95,13 +118,31 @@ onMounted(loadQueue)
           <div class="review-copy">
             <p>Submission {{ car.id }} · {{ car.location }}</p>
             <h2>{{ car.make }} <em>{{ car.model }}</em></h2>
-            <button
-              type="button"
-              :disabled="approvingId !== null"
-              @click="approve(car.id)"
-            >
-              {{ approvingId === car.id ? 'Approving...' : 'Approve for public garage' }}
-            </button>
+            <div class="review-actions">
+              <button
+                type="button"
+                :disabled="reviewingId !== null"
+                @click="approve(car.id)"
+              >
+                {{
+                  reviewingId === car.id && reviewAction === 'approve'
+                    ? 'Approving...'
+                    : 'Approve for public garage'
+                }}
+              </button>
+              <button
+                type="button"
+                class="reject-button"
+                :disabled="reviewingId !== null"
+                @click="reject(car.id)"
+              >
+                {{
+                  reviewingId === car.id && reviewAction === 'reject'
+                    ? 'Rejecting...'
+                    : 'Reject submission'
+                }}
+              </button>
+            </div>
           </div>
         </article>
       </div>
@@ -205,6 +246,12 @@ onMounted(loadQueue)
   font-weight: 400;
 }
 
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .review-copy button {
   align-self: flex-start;
   min-height: 50px;
@@ -217,6 +264,12 @@ onMounted(loadQueue)
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.review-copy .reject-button {
+  border: 1px solid #706c64;
+  background: transparent;
+  color: #eeeae0;
 }
 
 .review-copy button:disabled {

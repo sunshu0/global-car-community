@@ -50,6 +50,7 @@ describe('AdminReviewView', () => {
     })
     expect(wrapper.text()).toContain('Nissan 370Z')
     expect(wrapper.text()).toContain('Approve for public garage')
+    expect(wrapper.text()).toContain('Reject submission')
   })
 
   it('approves a car and removes it from the queue', async () => {
@@ -134,5 +135,72 @@ describe('AdminReviewView', () => {
       'does not have administrator access',
     )
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects a car and removes it from the queue', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response(200, {
+          id: 34,
+          email: 'admin@example.com',
+          displayName: 'Admin',
+          role: 'ADMIN',
+        }),
+      )
+      .mockResolvedValueOnce(
+        response(200, [
+          {
+            id: 76,
+            make: 'Honda',
+            model: 'S2000',
+            location: 'Tokyo, Japan',
+            imageUrl: null,
+            reviewStatus: 'PENDING',
+          },
+        ]),
+      )
+      .mockResolvedValueOnce(
+        response(200, {
+          headerName: 'X-CSRF-TOKEN',
+          token: 'fresh-token',
+        }),
+      )
+      .mockResolvedValueOnce(
+        response(200, {
+          id: 76,
+          make: 'Honda',
+          model: 'S2000',
+          location: 'Tokyo, Japan',
+          imageUrl: null,
+          reviewStatus: 'REJECTED',
+        }),
+      )
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mount(AdminReviewView, {
+      global: { stubs: { RouterLink: RouterLinkStub } },
+    })
+    await flushPromises()
+
+    const rejectButton = wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Reject submission')
+
+    expect(rejectButton).toBeDefined()
+    await rejectButton!.trigger('click')
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/admin/cars/76/reject', {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': 'fresh-token',
+      },
+    })
+    expect(wrapper.text()).toContain('Honda S2000 was rejected.')
+    expect(wrapper.text()).toContain('The review queue is empty.')
   })
 })

@@ -36,4 +36,15 @@ public class AdminCarController {
 
     return ResponseEntity.notFound().build();
   }
+
+  @PatchMapping("/{id}/reject")
+  public ResponseEntity<Car> rejectCar(@PathVariable long id) {
+    Optional<Car> rejectedCar = carService.rejectCar(id);
+
+    if (rejectedCar.isPresent()) {
+      return ResponseEntity.ok(rejectedCar.get());
+    }
+
+    return ResponseEntity.notFound().build();
+  }
 }

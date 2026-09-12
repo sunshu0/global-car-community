@@ -76,4 +76,12 @@ public class CarService {
           return carRepository.save(car);
         });
   }
+
+  public Optional<Car> rejectCar(long id) {
+    return carRepository.findById(id)
+        .map(car -> {
+          car.reject();
+          return carRepository.save(car);
+        });
+  }
 }

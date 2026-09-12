@@ -514,6 +514,9 @@ button:disabled {
 .review-status--approved {
   color: #28643c;
 }
+.review-status--rejected {
+  color: #942727;
+}
 .cars-error {
   color: #942727;
 }

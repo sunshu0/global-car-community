@@ -9,7 +9,7 @@ export interface Car {
   model: string
   location: string
   imageUrl: string | null
-  reviewStatus?: 'PENDING' | 'APPROVED'
+  reviewStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
   owner?: OwnerSummary | null
 }
 
