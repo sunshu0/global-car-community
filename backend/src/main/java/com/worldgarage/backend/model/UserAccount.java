@@ -59,4 +59,8 @@ public class UserAccount {
   public UserRole getRole() {
     return role;
   }
+
+  public void promoteToAdmin() {
+    role = UserRole.ADMIN;
+  }
 }
