@@ -98,6 +98,71 @@ class CarControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "invalid-car-owner@example.com", roles = "USER")
+  void rejectsInvalidCarSubmission() throws Exception {
+    userAccountRepository.save(
+        new UserAccount(
+            "invalid-car-owner@example.com",
+            "{bcrypt}test-password-hash",
+            "Invalid Car Owner"));
+
+    long carCountBefore = carRepository.count();
+
+    mockMvc
+        .perform(
+            post("/api/cars")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "make": " ",
+                      "model": "",
+                      "location": null,
+                      "imageUrl": null
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errors.make").value("Make is required."))
+        .andExpect(jsonPath("$.errors.model").value("Model is required."))
+        .andExpect(jsonPath("$.errors.location").value("Location is required."));
+
+    assertEquals(carCountBefore, carRepository.count());
+  }
+
+  @Test
+  @WithMockUser(username = "long-car-owner@example.com", roles = "USER")
+  void rejectsCarSubmissionWithFieldsThatAreTooLong() throws Exception {
+    userAccountRepository.save(
+        new UserAccount(
+            "long-car-owner@example.com",
+            "{bcrypt}test-password-hash",
+            "Long Car Owner"));
+
+    String longMake = "M".repeat(101);
+
+    mockMvc
+        .perform(
+            post("/api/cars")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "make": "%s",
+                      "model": "RX-7",
+                      "location": "Hiroshima, Japan",
+                      "imageUrl": null
+                    }
+                    """
+                        .formatted(longMake)))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.errors.make")
+                .value("Make must be at most 100 characters."));
+  }
+
+  @Test
   void returnsCarWhenIdExists() throws Exception {
     mockMvc.perform(get("/api/cars/2"))
         .andExpect(status().isOk())

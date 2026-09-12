@@ -7,6 +7,7 @@ import com.worldgarage.backend.model.UserAccount;
 import com.worldgarage.backend.service.CarService;
 import com.worldgarage.backend.service.ImageAssetService;
 import com.worldgarage.backend.service.UserAccountService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,7 @@ public class CarController {
 
   @PostMapping
   public ResponseEntity<Car> createCar(
-      @RequestBody CreateCarRequest request,
+      @Valid @RequestBody CreateCarRequest request,
       Authentication authentication) {
     UserAccount owner =
         userAccountService
