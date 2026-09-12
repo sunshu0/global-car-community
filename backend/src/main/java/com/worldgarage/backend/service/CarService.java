@@ -44,6 +44,21 @@ public class CarService {
     return carRepository.findAllByOwnerEmailOrderByIdDesc(normalizedEmail);
   }
 
+  public boolean deleteCarOwnedBy(long id, String ownerEmail) {
+    String normalizedEmail =
+        ownerEmail.toLowerCase(Locale.ROOT).trim();
+
+    Optional<Car> car =
+        carRepository.findByIdAndOwnerEmail(id, normalizedEmail);
+
+    if (car.isEmpty()) {
+      return false;
+    }
+
+    carRepository.delete(car.get());
+    return true;
+  }
+
   public Car createCar(String make, String model, String location) {
     return createCar(make, model, location, null);
   }

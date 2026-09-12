@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getCurrentUser, login, logout, register, type CurrentUser } from '../api/auth'
-import { getMyCars, type Car } from '../api/cars'
+import { deleteCar, getMyCars, type Car } from '../api/cars'
 
 const user = ref<CurrentUser | null>(null)
 const mode = ref<'login' | 'register'>('login')
@@ -16,6 +16,7 @@ const message = ref('')
 const myCars = ref<Car[]>([])
 const carsLoading = ref(false)
 const carsError = ref('')
+const deletingCarId = ref<number | null>(null)
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Unable to connect. Please try again.'
@@ -106,6 +107,25 @@ function handleCarSubmitted(): void {
   void loadMyCars()
 }
 
+async function removeCar(car: Car): Promise<void> {
+  if (deletingCarId.value !== null) return
+  if (!window.confirm(`Delete ${car.make} ${car.model}? This cannot be undone.`)) return
+
+  deletingCarId.value = car.id
+  carsError.value = ''
+  message.value = ''
+
+  try {
+    await deleteCar(car.id)
+    myCars.value = myCars.value.filter((item) => item.id !== car.id)
+    message.value = `${car.make} ${car.model} was deleted.`
+  } catch (cause) {
+    carsError.value = errorMessage(cause)
+  } finally {
+    deletingCarId.value = null
+  }
+}
+
 onMounted(() => {
   window.addEventListener('world-garage:car-submitted', handleCarSubmitted)
   void restore()
@@ -193,12 +213,22 @@ onBeforeUnmount(() => {
                 <strong>{{ car.make }} {{ car.model }}</strong>
                 <span>{{ car.location }}</span>
               </div>
-              <span
-                class="review-status"
-                :class="`review-status--${car.reviewStatus?.toLowerCase()}`"
-              >
-                {{ car.reviewStatus }}
-              </span>
+              <div class="my-car-actions">
+                <span
+                  class="review-status"
+                  :class="`review-status--${car.reviewStatus?.toLowerCase()}`"
+                >
+                  {{ car.reviewStatus }}
+                </span>
+                <button
+                  class="delete-car"
+                  type="button"
+                  :disabled="deletingCarId !== null"
+                  @click="removeCar(car)"
+                >
+                  {{ deletingCarId === car.id ? 'Deleting…' : 'Delete' }}
+                </button>
+              </div>
             </li>
           </ul>
         </div>
@@ -507,6 +537,18 @@ button:disabled {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+.my-car-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.delete-car {
+  padding: 0.4rem 0.65rem;
+  border-color: #942727;
+  background: transparent;
+  color: #942727;
+  font-size: 0.72rem;
 }
 .review-status--pending {
   color: #9b5b11;

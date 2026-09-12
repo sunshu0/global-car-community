@@ -1,3 +1,5 @@
+import { requestWithCsrf } from './auth'
+
 export interface OwnerSummary {
   id: number
   displayName: string
@@ -39,4 +41,8 @@ export async function getMyCars(): Promise<Car[]> {
   }
 
   return response.json()
+}
+
+export async function deleteCar(id: number): Promise<void> {
+  await requestWithCsrf(`/api/cars/${id}`, 'DELETE')
 }

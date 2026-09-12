@@ -37,7 +37,7 @@ export async function getCsrfToken(): Promise<CsrfToken> {
 
 export async function requestWithCsrf(
   path: string,
-  method: 'POST' | 'PATCH',
+  method: 'POST' | 'PATCH' | 'DELETE',
   body?: object,
 ): Promise<Response> {
   const csrf = await getCsrfToken()

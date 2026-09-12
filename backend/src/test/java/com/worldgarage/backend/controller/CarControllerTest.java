@@ -1,7 +1,9 @@
 package com.worldgarage.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -254,6 +256,59 @@ class CarControllerTest {
   @Test
   void rejectsAnonymousMyCarsRequest() throws Exception {
     mockMvc.perform(get("/api/cars/mine"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockUser(username = "delete-owner@example.com", roles = "USER")
+  void ownerDeletesOwnCar() throws Exception {
+    UserAccount owner =
+        userAccountRepository.save(
+            new UserAccount(
+                "delete-owner@example.com",
+                "{bcrypt}owner-password-hash",
+                "Delete Owner"));
+
+    Car car = new Car("Honda", "S2000", "Tokyo, Japan");
+    car.setOwner(owner);
+    car.approve();
+    car = carRepository.save(car);
+
+    mockMvc.perform(delete("/api/cars/{id}", car.getId()).with(csrf()))
+        .andExpect(status().isNoContent());
+
+    mockMvc.perform(get("/api/cars/{id}", car.getId()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser(username = "other-owner@example.com", roles = "USER")
+  void userCannotDeleteAnotherOwnersCar() throws Exception {
+    UserAccount owner =
+        userAccountRepository.save(
+            new UserAccount(
+                "original-owner@example.com",
+                "{bcrypt}owner-password-hash",
+                "Original Owner"));
+    userAccountRepository.save(
+        new UserAccount(
+            "other-owner@example.com",
+            "{bcrypt}other-password-hash",
+            "Other Owner"));
+
+    Car car = new Car("Mazda", "MX-5", "Auckland, New Zealand");
+    car.setOwner(owner);
+    car = carRepository.save(car);
+
+    mockMvc.perform(delete("/api/cars/{id}", car.getId()).with(csrf()))
+        .andExpect(status().isNotFound());
+
+    assertTrue(carRepository.existsById(car.getId()));
+  }
+
+  @Test
+  void anonymousUserCannotDeleteCar() throws Exception {
+    mockMvc.perform(delete("/api/cars/{id}", 1L).with(csrf()))
         .andExpect(status().isUnauthorized());
   }
 }

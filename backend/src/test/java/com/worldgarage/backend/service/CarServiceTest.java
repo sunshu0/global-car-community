@@ -1,6 +1,7 @@
 package com.worldgarage.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -231,6 +232,47 @@ class CarServiceTest {
 
     verify(carRepository)
         .findAllByOwnerEmailOrderByIdDesc("owner@example.com");
+  }
+
+  @Test
+  void deletesCarOwnedByNormalizedEmail() {
+    Car ownedCar =
+        new Car(12L, "Honda", "S2000", "Tokyo, Japan");
+
+    when(carRepository.findByIdAndOwnerEmail(
+        12L,
+        "owner@example.com"))
+        .thenReturn(Optional.of(ownedCar));
+
+    boolean deleted =
+        carService.deleteCarOwnedBy(
+            12L,
+            " Owner@Example.com ");
+
+    assertTrue(deleted);
+    verify(carRepository).findByIdAndOwnerEmail(
+        12L,
+        "owner@example.com");
+    verify(carRepository).delete(ownedCar);
+  }
+
+  @Test
+  void doesNotDeleteCarNotOwnedByUser() {
+    when(carRepository.findByIdAndOwnerEmail(
+        99L,
+        "owner@example.com"))
+        .thenReturn(Optional.empty());
+
+    boolean deleted =
+        carService.deleteCarOwnedBy(
+            99L,
+            "owner@example.com");
+
+    assertFalse(deleted);
+    verify(carRepository).findByIdAndOwnerEmail(
+        99L,
+        "owner@example.com");
+    verify(carRepository, never()).delete(any(Car.class));
   }
 
   @Test

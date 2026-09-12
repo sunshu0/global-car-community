@@ -99,6 +99,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/cars")
                     .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/cars/**")
+                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/uploads")
                     .authenticated()
                     .anyRequest()

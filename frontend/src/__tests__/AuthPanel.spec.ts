@@ -170,6 +170,35 @@ describe('account authentication', () => {
     expect(wrapper.get('.my-car-list').text()).toContain('APPROVED')
   })
 
+  it('deletes one of the current users vehicles', async () => {
+    const fetchMock = setup(response(200, owner), [
+      {
+        id: 9,
+        make: 'Mazda',
+        model: 'RX-7',
+        location: 'Hiroshima, Japan',
+        imageUrl: null,
+        reviewStatus: 'PENDING',
+      },
+    ])
+    vi.stubGlobal('confirm', vi.fn(() => true))
+
+    const wrapper = mount(AuthPanel)
+    await flushPromises()
+
+    fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(response(204))
+    await wrapper.get('.delete-car').trigger('click')
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/cars/9', {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': 'fresh-token' },
+    })
+    expect(wrapper.text()).toContain('Mazda RX-7 was deleted.')
+    expect(wrapper.find('.my-car-list').exists()).toBe(false)
+  })
+
   it('shows a distinct review console instead of a personal garage for administrators', async () => {
     setup(
       response(200, {
