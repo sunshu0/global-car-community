@@ -85,6 +85,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/auth/csrf")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/health")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/auth/me")
                     .authenticated()
                     .requestMatchers("/api/admin/**")
@@ -103,6 +105,18 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/uploads")
                     .authenticated()
+                    .requestMatchers(
+                        "/",
+                        "/index.html",
+                        "/favicon.ico",
+                        "/assets/**",
+                        "/garage",
+                        "/submit",
+                        "/account",
+                        "/admin",
+                        "/cars/*",
+                        "/users/*")
+                    .permitAll()
                     .anyRequest()
                     .denyAll())
         .logout(logout -> logout

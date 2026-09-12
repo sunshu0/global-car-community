@@ -36,7 +36,7 @@ public class Car {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
-  @ColumnDefault("'APPROVED'")
+  @ColumnDefault("'PENDING'")
   private ReviewStatus reviewStatus = ReviewStatus.PENDING;
 
   @JsonIgnore

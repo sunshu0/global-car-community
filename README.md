@@ -18,7 +18,7 @@ garage.
 - Persistent local H2 data and protected local image storage
 - Backend integration/unit tests and frontend component tests
 
-At the MVP checkpoint, the complete suites contain 68 backend tests and 28
+At the deployment-ready MVP checkpoint, the complete suites contain 71 backend tests and 28
 frontend tests. Deployment, email verification, password recovery, and social
 features are intentionally listed as future work rather than presented as
 finished functionality.
@@ -29,7 +29,7 @@ finished functionality.
 | --- | --- |
 | Frontend | Vue 3, TypeScript, Vite, Vue Router, Vitest |
 | Backend | Java 21, Spring Boot, Spring MVC, Spring Data JPA, Spring Security |
-| Data | H2 file database for local development |
+| Data | H2 for local development; PostgreSQL + Flyway in production |
 | Testing | JUnit 5, Mockito, MockMvc, Vitest, Vue Test Utils |
 
 The frontend calls the backend through `/api`. During development, Vite proxies
@@ -116,7 +116,19 @@ npm run build
 ```
 
 GitHub Actions runs the same backend test, frontend test, and production build
-checks for pushes and pull requests.
+checks for pushes and pull requests, and verifies that the deployment image builds.
+
+## Deployment
+
+The repository includes a multi-stage Docker build and a `prod` Spring profile
+for Railway. The deployed container serves both the Vue application and API,
+uses PostgreSQL through Railway's private network, and stores uploaded files on
+an attached persistent volume.
+
+See [docs/deployment.md](docs/deployment.md) for the required PostgreSQL variable
+references, administrator secrets, `/data` volume, healthcheck, and acceptance
+checklist. Deployment configuration is ready; a public service is not claimed as
+live until those Railway resources have been created and verified.
 
 ## Project structure
 
@@ -128,7 +140,5 @@ docs/      Focused technical notes
 
 ## Deliberate MVP boundaries
 
-The next production phase will replace local H2/file storage with managed
-PostgreSQL and durable cloud or persistent-disk image storage. Email verification,
-password reset, user moderation, richer owner profiles, multiple vehicle photos,
-likes, and comments remain on the roadmap.
+Email verification, password reset, user moderation, richer owner profiles,
+multiple vehicle photos, likes, and comments remain on the roadmap.

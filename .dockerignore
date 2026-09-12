@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+backend/data
+backend/target
+backend/uploads
+frontend/dist
+frontend/node_modules
+uploads

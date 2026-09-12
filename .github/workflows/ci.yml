@@ -41,3 +41,10 @@ jobs:
       - run: npm ci
       - run: npm run test:unit -- --run
       - run: npm run build
+
+  container:
+    name: Deployment image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build --tag world-garage:ci .
