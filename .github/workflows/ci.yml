@@ -47,4 +47,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: docker build --tag world-garage:ci .
+      - name: Build deployment image
+        run: |
+          if ! docker build --progress=plain --tag world-garage:ci . 2>&1 | tee docker-build.log; then
+            details="$(tail -n 25 docker-build.log | tr '\n' ' ')"
+            echo "::error file=Dockerfile,line=1::$details"
+            exit 1
+          fi
