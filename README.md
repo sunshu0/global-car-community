@@ -18,7 +18,7 @@ garage.
 - Persistent local H2 data and protected local image storage
 - Backend integration/unit tests and frontend component tests
 
-At the deployment-ready MVP checkpoint, the complete suites contain 71 backend tests and 28
+At the deployment-ready MVP checkpoint, the complete suites contain 72 backend tests and 28
 frontend tests. Deployment, email verification, password recovery, and social
 features are intentionally listed as future work rather than presented as
 finished functionality.

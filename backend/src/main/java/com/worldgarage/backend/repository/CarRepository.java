@@ -4,6 +4,7 @@ import com.worldgarage.backend.model.Car;
 import com.worldgarage.backend.model.ReviewStatus;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CarRepository extends JpaRepository<Car, Long> {
@@ -18,6 +19,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
       String imageUrl,
       ReviewStatus reviewStatus);
 
+  @EntityGraph(attributePaths = "owner")
   Optional<Car> findByIdAndReviewStatus(
       Long id,
       ReviewStatus reviewStatus
