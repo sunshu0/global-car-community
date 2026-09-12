@@ -4,6 +4,8 @@ World Garage is a full-stack automotive community MVP where owners submit their
 cars and administrators review them before they appear in a public, magazine-style
 garage.
 
+[Live demo](https://global-car-community-production.up.railway.app/)
+
 ![Blue Nissan 370Z featured by World Garage](frontend/src/assets/world-garage-hero.jpg)
 
 ## MVP features
@@ -15,11 +17,11 @@ garage.
 - Personal garage showing pending, approved, and rejected submissions
 - Owner-only deletion of vehicle submissions
 - Administrator review queue with approve and reject actions
-- Persistent local H2 data and protected local image storage
+- H2 storage locally; PostgreSQL and volume-backed image storage in production
 - Backend integration/unit tests and frontend component tests
 
-At the deployment-ready MVP checkpoint, the complete suites contain 72 backend tests and 28
-frontend tests. Deployment, email verification, password recovery, and social
+At the deployment-ready MVP checkpoint, the complete suites contain 72 backend
+tests and 28 frontend tests. Email verification, password recovery, and social
 features are intentionally listed as future work rather than presented as
 finished functionality.
 
@@ -127,8 +129,10 @@ an attached persistent volume.
 
 See [docs/deployment.md](docs/deployment.md) for the required PostgreSQL variable
 references, administrator secrets, `/data` volume, healthcheck, and acceptance
-checklist. Deployment configuration is ready; a public service is not claimed as
-live until those Railway resources have been created and verified.
+checklist. The Railway deployment is live at
+[global-car-community-production.up.railway.app](https://global-car-community-production.up.railway.app/).
+Its health endpoint, PostgreSQL persistence, administrator flow, vehicle detail
+response, and uploaded-image persistence across a redeploy have been verified.
 
 ## Project structure
 

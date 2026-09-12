@@ -1,5 +1,8 @@
 # Railway deployment
 
+Production URL:
+[global-car-community-production.up.railway.app](https://global-car-community-production.up.railway.app/)
+
 World Garage deploys as one Docker service. The Docker build compiles Vue, copies
 the generated static files into the Spring Boot application, and packages one
 executable JAR. Keeping the browser and API on one origin avoids cross-origin
