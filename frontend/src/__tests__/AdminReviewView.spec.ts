@@ -16,7 +16,7 @@ afterEach(() => vi.unstubAllGlobals())
 describe('AdminReviewView', () => {
   it('loads pending cars for an administrator', async () => {
     const fetchMock = vi
-      .fn()
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         response(200, {
           id: 34,
@@ -55,7 +55,7 @@ describe('AdminReviewView', () => {
 
   it('approves a car and removes it from the queue', async () => {
     const fetchMock = vi
-      .fn()
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         response(200, {
           id: 34,
@@ -115,7 +115,7 @@ describe('AdminReviewView', () => {
   })
 
   it('blocks the page for a non-admin account', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(
       response(200, {
         id: 33,
         email: 'owner@example.com',
@@ -139,7 +139,7 @@ describe('AdminReviewView', () => {
 
   it('rejects a car and removes it from the queue', async () => {
     const fetchMock = vi
-      .fn()
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(
         response(200, {
           id: 34,

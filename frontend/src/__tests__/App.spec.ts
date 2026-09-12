@@ -140,6 +140,7 @@ describe('World Garage pages', () => {
     await flushPromises()
 
     const uploadOptions = vi.mocked(fetch).mock.calls[1]?.[1]
+    const uploadBody = uploadOptions?.body
     expect(fetch).toHaveBeenNthCalledWith(2, '/api/uploads', {
       method: 'POST',
       credentials: 'same-origin',
@@ -148,7 +149,8 @@ describe('World Garage pages', () => {
       },
       body: expect.any(FormData),
     })
-    expect((uploadOptions?.body as FormData).get('image')).toBe(image)
+    expect(uploadBody).toBeInstanceOf(FormData)
+    expect((uploadBody as FormData).get('image')).toBe(image)
     expect(fetch).toHaveBeenLastCalledWith('/api/cars', {
       method: 'POST',
       credentials: 'same-origin',

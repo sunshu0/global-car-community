@@ -3,9 +3,10 @@
 ## Scope
 
 Implemented: registration, password login, current-user lookup, logout, frontend
-forms, session restoration on page reload, and CSRF protection for auth writes.
-This is not email verification, password recovery, vehicle ownership, or an admin UI.
-Registration creates a USER; it does not log the user in automatically.
+forms, session restoration on page reload, and CSRF protection for writes.
+Registration creates a USER; it does not log the user in automatically. Vehicle
+ownership and the role-protected administrator review UI use this authentication
+layer but are documented at project level in the root README.
 
 ## Request flow
 
@@ -27,9 +28,9 @@ returns 409. Validation failures return 400 with field messages.
 ## Local development
 
 Start the backend from backend with ./mvnw.cmd spring-boot:run, then start the
-frontend from frontend with npm run dev. Visit http://localhost:5173/#account.
+frontend from frontend with npm run dev. Visit http://localhost:5173/account.
 Use one hostname consistently; localhost and 127.0.0.1 do not share cookies.
-The account section lives below the vehicle submission form.
+The account and vehicle submission forms are separate routed pages.
 
 H2 stores user records in backend/data. Sessions are in memory: restarting the
 backend signs users out but does not delete their accounts.

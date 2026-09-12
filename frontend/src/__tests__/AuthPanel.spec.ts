@@ -7,7 +7,7 @@ function response(status: number, body: unknown = null): Response {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response
 }
 function setup(initial = response(401), cars: unknown[] = []) {
-  const fetchMock = vi.fn().mockResolvedValueOnce(initial)
+  const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(initial)
   if (initial.status === 200) fetchMock.mockResolvedValueOnce(response(200, cars))
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
